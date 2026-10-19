@@ -184,7 +184,11 @@ const it: Record<keyof typeof en, string> = {
   'games.valorant.t1': 'Ogni account Riot ha la sua cartella di impostazioni. Accedi una volta su questo PC perché compaia.',
   'games.valorant.t2': 'Nel gioco: NVIDIA Reflex Attivo + Boost, e Vignettatura, Bloom e Distorsione disattivati.',
   'games.valorant.t3': 'Con MSAA 2x o 4x teste e bordi restano ben leggibili, quindi l’anti-aliasing resta come l’hai impostato.',
-  'set.pwOwner': 'Solo il proprietario può cambiare la password.'
+  'set.pwOwner': 'Solo il proprietario può cambiare la password.',
+  'upd.ready': 'Buddy Optimizer {v} è pronto da installare.',
+  'upd.downloading': 'Download aggiornamento {v}… {p}%',
+  'upd.restart': 'Riavvia e aggiorna',
+  'upd.later': 'Più tardi'
 }
 
 export default it

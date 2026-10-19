@@ -104,7 +104,7 @@ function createPreviewApi(): BuddyApi {
       onExit: (cb) => on('exit', cb)
     },
     win: { minimize() {}, maximize() {}, close() {}, onMaximized: () => () => {} },
-    app: { openExternal() {}, openLogs() {}, copyText(text) { navigator.clipboard?.writeText(text).catch(() => {}) }, relaunch() {}, reboot: async () => {}, checkUpdates: async () => {}, installUpdate() {}, onUpdate: () => () => {}, testNotification() {} }
+    app: { openExternal() {}, openLogs() {}, copyText(text) { navigator.clipboard?.writeText(text).catch(() => {}) }, relaunch() {}, reboot: async () => {}, checkUpdates: async () => {}, updateStatus: async () => ({ state: 'idle' }), installUpdate() {}, onUpdate: () => () => {}, testNotification() {} }
   }
 }
 

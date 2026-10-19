@@ -182,7 +182,11 @@ const en = {
   'games.valorant.t1': 'Each Riot account has its own settings folder. Sign in once on this PC so it shows up.',
   'games.valorant.t2': 'In-game: NVIDIA Reflex On + Boost, and Vignette, Bloom and Distortion off.',
   'games.valorant.t3': 'MSAA 2x or 4x keeps heads and edges easy to read, so anti-aliasing is left as you set it.',
-  'set.pwOwner': 'Only the owner can change the password.'
+  'set.pwOwner': 'Only the owner can change the password.',
+  'upd.ready': 'Buddy Optimizer {v} is ready to install.',
+  'upd.downloading': 'Downloading update {v}… {p}%',
+  'upd.restart': 'Restart & update',
+  'upd.later': 'Later'
 }
 
 export default en

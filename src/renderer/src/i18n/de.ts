@@ -167,7 +167,11 @@ const de: Record<keyof typeof en, string> = {
   'games.valorant.t1': 'Jedes Riot-Konto hat einen eigenen Einstellungsordner. Melde dich einmal auf diesem PC an, damit es erscheint.',
   'games.valorant.t2': 'Im Spiel: NVIDIA Reflex Ein + Boost, sowie Vignette, Bloom und Verzerrung aus.',
   'games.valorant.t3': 'MSAA 2x oder 4x hält Köpfe und Kanten gut erkennbar, deshalb bleibt die Kantenglättung wie eingestellt.',
-  'set.pwOwner': 'Nur der Besitzer kann das Passwort ändern.'
+  'set.pwOwner': 'Nur der Besitzer kann das Passwort ändern.',
+  'upd.ready': 'Buddy Optimizer {v} ist bereit zur Installation.',
+  'upd.downloading': 'Update {v} wird geladen… {p} %',
+  'upd.restart': 'Neu starten & aktualisieren',
+  'upd.later': 'Später'
 }
 
 export default de

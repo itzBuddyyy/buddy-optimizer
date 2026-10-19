@@ -190,22 +190,74 @@ function scheduleIdleCheck() {
 }
 
 // ---- updates (GitHub Releases) ----
-async function checkUpdates(manual: boolean) {
-  if (!app.isPackaged) { send('update:status', { state: 'none' } satisfies UpdateStatus); return }
+// electron-updater is CommonJS and defines `autoUpdater` as a lazy getter, which
+// Node's ESM loader cannot see as a named export: `const { autoUpdater } =
+// await import(...)` yields undefined. Read it from the default export instead.
+async function getUpdater() {
+  const mod = (await import('electron-updater')) as unknown as { default?: typeof import('electron-updater'); autoUpdater?: import('electron-updater').AppUpdater }
+  const updater = mod.default?.autoUpdater ?? mod.autoUpdater
+  if (!updater) throw new Error('electron-updater did not load')
+  return updater
+}
+
+let lastUpdate: UpdateStatus = { state: 'idle' }
+let updateNotified = ''
+let updating = false
+function setUpdate(u: UpdateStatus) {
+  lastUpdate = u
+  send('update:status', u)
+}
+
+// keeps a short log so update problems can be diagnosed (%APPDATA%\Buddy Optimizer\logs\updater.log)
+function updateLog(level: string, msg: unknown) {
   try {
-    const { autoUpdater } = await import('electron-updater')
+    const fs = require('node:fs') as typeof import('node:fs')
+    const dir = join(app.getPath('userData'), 'logs')
+    fs.mkdirSync(dir, { recursive: true })
+    const file = join(dir, 'updater.log')
+    if (fs.existsSync(file) && fs.statSync(file).size > 512 * 1024) fs.renameSync(file, file + '.old')
+    fs.appendFileSync(file, `${new Date().toISOString()} [${level}] ${String(msg)}\n`)
+  } catch { /* logging must never break updates */ }
+}
+
+async function checkUpdates(manual: boolean) {
+  if (!app.isPackaged) { setUpdate({ state: 'none' }); return }
+  if (updating) return
+  if (lastUpdate.state === 'ready') { setUpdate(lastUpdate); return }   // already downloaded, waiting for a restart
+  updating = true
+  try {
+    const autoUpdater = await getUpdater()
     autoUpdater.autoDownload = true
+    autoUpdater.autoInstallOnAppQuit = true
+    autoUpdater.logger = { info: (m: unknown) => updateLog('info', m), warn: (m: unknown) => updateLog('warn', m), error: (m: unknown) => updateLog('error', m), debug: () => {} }
     autoUpdater.removeAllListeners()
-    autoUpdater.on('checking-for-update', () => send('update:status', { state: 'checking' }))
-    autoUpdater.on('update-available', (i) => send('update:status', { state: 'available', version: i.version }))
-    autoUpdater.on('update-not-available', () => send('update:status', { state: 'none' }))
-    autoUpdater.on('download-progress', (p) => send('update:status', { state: 'downloading', percent: Math.round(p.percent) }))
-    autoUpdater.on('update-downloaded', (i) => send('update:status', { state: 'ready', version: i.version }))
-    autoUpdater.on('error', (e) => send('update:status', { state: 'error', error: manual ? String(e?.message ?? e) : undefined }))
+    autoUpdater.on('checking-for-update', () => setUpdate({ state: 'checking' }))
+    autoUpdater.on('update-available', (i) => setUpdate({ state: 'available', version: i.version }))
+    autoUpdater.on('update-not-available', () => setUpdate({ state: 'none' }))
+    autoUpdater.on('download-progress', (p) => setUpdate({ state: 'downloading', version: lastUpdate.version, percent: Math.round(p.percent) }))
+    autoUpdater.on('update-downloaded', (i) => {
+      setUpdate({ state: 'ready', version: i.version })
+      notifyUpdateReady(i.version)
+    })
+    autoUpdater.on('error', (e) => setUpdate({ state: 'error', error: manual ? String(e?.message ?? e) : undefined }))
     await autoUpdater.checkForUpdates()
   } catch (e) {
-    send('update:status', { state: 'error', error: manual ? String((e as Error).message) : undefined })
+    updateLog('error', (e as Error)?.stack ?? e)
+    setUpdate({ state: 'error', error: manual ? String((e as Error).message) : undefined })
+  } finally {
+    updating = false
   }
+}
+
+// One Windows notification per downloaded version; clicking it opens the app.
+// The in-app banner shows the same thing whenever the window is open.
+function notifyUpdateReady(version: string) {
+  if (updateNotified === version || !Notification.isSupported()) return
+  updateNotified = version
+  const s = loadSettings()
+  const n = new Notification({ title: t(s.language, 'update.title'), body: t(s.language, 'update.body').replace('{v}', version), icon: iconPath() })
+  n.on('click', () => showWindow())
+  n.show()
 }
 
 // ---- IPC ----
@@ -284,11 +336,17 @@ function registerIpc() {
     spawn('shutdown.exe', ['/r', '/t', '5', '/c', 'Buddy Optimizer: restarting to apply optimizations'], { windowsHide: true, detached: true })
   }))
   ipcMain.handle('app:checkUpdates', guard(() => checkUpdates(true)))
+  ipcMain.handle('app:updateStatus', () => lastUpdate)
   ipcMain.on('app:installUpdate', async () => {
-    if (!isUnlocked()) return
-    const { autoUpdater } = await import('electron-updater')
-    quitting = true
-    autoUpdater.quitAndInstall()
+    if (!isUnlocked() || lastUpdate.state !== 'ready') return
+    try {
+      const autoUpdater = await getUpdater()
+      quitting = true
+      autoUpdater.quitAndInstall()
+    } catch (e) {
+      quitting = false
+      updateLog('error', (e as Error)?.stack ?? e)
+    }
   })
   ipcMain.on('app:testNotification', () => {
     const s = loadSettings()
@@ -326,7 +384,9 @@ app.whenReady().then(() => {
   monitor.start()
   scheduleIdleCheck()
   powerMonitor.on('lock-screen', () => { if (loadSettings().security.autoLockMinutes > 0) doLock() })
+  // check shortly after start, then every 4 hours while the app sits in the tray
   if (s.checkUpdates) setTimeout(() => checkUpdates(false), 8000)
+  setInterval(() => { if (loadSettings().checkUpdates) checkUpdates(false) }, 4 * 60 * 60 * 1000)
 })
 
 app.on('before-quit', () => { quitting = true; monitor.stop(); engine.shutdown() })

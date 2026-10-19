@@ -113,3 +113,15 @@
 .code-chip code { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 12px; color: var(--text-1); }
 .game .foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .games-note { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-top: 16px; }
+
+/* ------------------------------------------------------------------ update banner */
+.update-banner {
+  position: fixed; right: 20px; bottom: 20px; z-index: 50; max-width: min(520px, calc(100vw - 40px));
+  display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 12px; border-radius: 16px; box-shadow: var(--shadow-2);
+  background: rgba(20, 11, 32, .92) !important; backdrop-filter: blur(24px) saturate(1.4);
+}
+.update-banner .ub-ico { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; flex: none; background: var(--grad-accent); color: #fff; }
+.update-banner .ub-text { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+[data-theme='light'] .update-banner { background: rgba(250, 246, 255, .94) !important; }
+.update-banner .ub-bar { height: 3px; margin-top: 7px; border-radius: 2px; background: rgba(255,255,255,.1); overflow: hidden; }
+.update-banner .ub-bar > div { height: 100%; background: var(--grad-accent); }

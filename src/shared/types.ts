@@ -162,6 +162,8 @@ export interface BuddyApi {
     relaunch(): void
     reboot(): Promise<void>
     checkUpdates(): Promise<void>
+    /** last known update state (the check runs before the window subscribes) */
+    updateStatus(): Promise<UpdateStatus>
     installUpdate(): void
     onUpdate(cb: (u: UpdateStatus) => void): () => void
     testNotification(): void

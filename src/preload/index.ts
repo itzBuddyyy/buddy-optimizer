@@ -51,6 +51,7 @@ const api: BuddyApi = {
     relaunch: () => ipcRenderer.send('app:relaunch'),
     reboot: () => ipcRenderer.invoke('app:reboot'),
     checkUpdates: () => ipcRenderer.invoke('app:checkUpdates'),
+    updateStatus: () => ipcRenderer.invoke('app:updateStatus'),
     installUpdate: () => ipcRenderer.send('app:installUpdate'),
     onUpdate: (cb) => on('update:status', cb),
     testNotification: () => ipcRenderer.send('app:testNotification')

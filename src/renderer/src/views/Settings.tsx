@@ -267,7 +267,7 @@ function EngineSettings() {
 function About() {
   const t = useT()
   const [u, setU] = useState<UpdateStatus>({ state: 'idle' })
-  useEffect(() => api.app.onUpdate(setU), [])
+  useEffect(() => { api.app.updateStatus().then(setU).catch(() => {}); return api.app.onUpdate(setU) }, [])
   const label = { idle: t('set.checkUpdates'), checking: t('set.checking'), none: t('set.upToDate'), available: t('set.updateAvail', { v: u.version ?? '' }), downloading: `${t('set.downloading')} ${u.percent ?? 0}%`, ready: t('set.updateReady', { v: u.version ?? '' }), error: t('set.updateError') }[u.state]
   return (
     <>

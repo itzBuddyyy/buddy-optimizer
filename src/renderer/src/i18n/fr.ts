@@ -167,7 +167,11 @@ const fr: Record<keyof typeof en, string> = {
   'games.valorant.t1': 'Chaque compte Riot a son dossier de réglages. Connectez-vous une fois sur ce PC pour qu’il apparaisse.',
   'games.valorant.t2': 'En jeu : NVIDIA Reflex Activé + Boost, et Vignette, Bloom et Distorsion désactivés.',
   'games.valorant.t3': 'Le MSAA 2x ou 4x garde têtes et contours lisibles, donc l’anticrénelage reste tel que vous l’avez réglé.',
-  'set.pwOwner': 'Seul le propriétaire peut changer le mot de passe.'
+  'set.pwOwner': 'Seul le propriétaire peut changer le mot de passe.',
+  'upd.ready': 'Buddy Optimizer {v} est prêt à être installé.',
+  'upd.downloading': 'Téléchargement de la mise à jour {v}… {p} %',
+  'upd.restart': 'Redémarrer et mettre à jour',
+  'upd.later': 'Plus tard'
 }
 
 export default fr

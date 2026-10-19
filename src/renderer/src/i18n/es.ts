@@ -167,7 +167,11 @@ const es: Record<keyof typeof en, string> = {
   'games.valorant.t1': 'Cada cuenta de Riot tiene su carpeta de ajustes. Inicia sesión una vez en este PC para que aparezca.',
   'games.valorant.t2': 'En el juego: NVIDIA Reflex Activado + Boost, y Viñeta, Bloom y Distorsión desactivados.',
   'games.valorant.t3': 'MSAA 2x o 4x mantiene cabezas y bordes fáciles de leer, así que el antialiasing queda como lo tengas.',
-  'set.pwOwner': 'Solo el propietario puede cambiar la contraseña.'
+  'set.pwOwner': 'Solo el propietario puede cambiar la contraseña.',
+  'upd.ready': 'Buddy Optimizer {v} está listo para instalarse.',
+  'upd.downloading': 'Descargando actualización {v}… {p}%',
+  'upd.restart': 'Reiniciar y actualizar',
+  'upd.later': 'Más tarde'
 }
 
 export default es

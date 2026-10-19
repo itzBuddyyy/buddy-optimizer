@@ -5,6 +5,7 @@ import { useSettings } from '@/lib/store'
 import { EngineProvider, useEngine } from '@/lib/engine'
 import { OverlayProvider } from '@/components/Overlay'
 import { Backdrop, Sidebar, TitleBar, type View } from '@/components/Chrome'
+import { UpdateBanner } from '@/components/UpdateBanner'
 import { Lock } from '@/views/Lock'
 import { Dashboard } from '@/views/Dashboard'
 import { Optimize } from '@/views/Optimize'
@@ -47,6 +48,7 @@ function Shell() {
           {view === 'settings' && <SettingsView key="s" />}
         </AnimatePresence>
       </main>
+      <UpdateBanner />
     </motion.div>
   )
 }
