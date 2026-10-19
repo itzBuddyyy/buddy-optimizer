@@ -12,7 +12,7 @@ import { spring } from '@/lib/motion'
 type Run = (action: string, args?: Record<string, unknown>, okText?: string) => Promise<EngineResult | null | undefined>
 
 // Wrapper: tabs that read live system state need the elevated engine.
-function NeedsEngine({ children }: { children: ReactNode }) {
+export function NeedsEngine({ children }: { children: ReactNode }) {
   const t = useT()
   const eng = useEngine()
   const toast = useToast()
@@ -29,7 +29,7 @@ function NeedsEngine({ children }: { children: ReactNode }) {
   )
 }
 
-function useQuery<T>(what: string) {
+export function useQuery<T>(what: string) {
   const eng = useEngine()
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(false)
@@ -44,7 +44,7 @@ function useQuery<T>(what: string) {
   return { data, loading, reload: load }
 }
 
-function Loading() {
+export function Loading() {
   return <div className="glass" style={{ padding: 30, display: 'grid', placeItems: 'center' }}><Loader2 className="spin" size={20} style={{ color: 'var(--orchid-400)' }} /></div>
 }
 

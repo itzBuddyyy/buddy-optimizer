@@ -60,6 +60,14 @@ $hello = $null
 try { $hello = $reader.ReadLine() | ConvertFrom-Json } catch { }
 if (-not $hello -or $hello.token -ne $Token) { exit 4 }
 
+# The data folder holds the undo journals this elevated agent replays, so only
+# Administrators/SYSTEM may write there (ProgramData lets standard users create files).
+try {
+    New-Item -ItemType Directory -Path $script:DataRoot -Force | Out-Null
+    & icacls.exe $script:DataRoot /setowner '*S-1-5-32-544' /T /C /Q | Out-Null
+    & icacls.exe $script:DataRoot /inheritance:r /grant:r '*S-1-5-32-544:(OI)(CI)F' '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-545:(OI)(CI)RX' /T /C /Q | Out-Null
+} catch { Write-Log "ACL hardening failed: $($_.Exception.Message)" }
+
 Write-Log 'Agent connected to Buddy Optimizer'
 [void](Test-WmiHealth)
 $script:Sys = Get-SystemProfile
@@ -123,6 +131,8 @@ function Invoke-Action([string]$action, $a) {
             }
         }
         'toggle'       { Set-AdvancedToggle -Id ([string]$a.id) -Enable ([bool]$a.enable) }
+        'gameOptimize' { Invoke-GameOptimize -Game ([string]$a.game) -Options $a.options }
+        'gameRestore'  { Restore-GameSettings -Game ([string]$a.game) }
         'undo'         { Undo-SessionFile -Path (Join-Path $script:BackupDir ([IO.Path]::GetFileName([string]$a.file))) }
         default        { throw "Unknown action: $action" }
     }
@@ -136,6 +146,7 @@ function Invoke-Query([string]$what) {
         'sessions' { return @(Get-UndoSessions) }
         'timer'    { $s = Get-StrService; return [ordered]@{ installed = [bool]$s; state = if ($s) { [string]$s.State } else { $null } } }
         'power'    { return [ordered]@{ active = (Get-ActivePlanGuid); plans = @(Get-PowerPlans) } }
+        'games'    { return @(Get-GamesState) }
         default    { throw "Unknown query: $what" }
     }
 }
@@ -149,6 +160,7 @@ while ($true) {
     try { $msg = $line | ConvertFrom-Json } catch { continue }
     $script:CurrentId = [int]$msg.id
     if ($msg.cmd -eq 'quit') { break }
+    if ($msg.env) { $script:UserEnv = $msg.env }
     $script:DryRun = [bool]$msg.dryRun
     if ($null -ne $msg.xboxMode) { $script:XboxMode = [bool]$msg.xboxMode }
     $script:Stats.OK = 0; $script:Stats.SKIP = 0; $script:Stats.FAIL = 0; $script:Stats.DRY = 0

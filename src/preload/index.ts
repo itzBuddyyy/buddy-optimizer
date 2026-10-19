@@ -15,6 +15,7 @@ const api: BuddyApi = {
   auth: {
     unlock: (pw) => ipcRenderer.invoke('auth:unlock', pw),
     change: (cur, next) => ipcRenderer.invoke('auth:change', cur, next),
+    isOwner: () => ipcRenderer.invoke('auth:isOwner'),
     lock: () => ipcRenderer.invoke('auth:lock'),
     onLocked: (cb) => on('auth:locked', cb)
   },
@@ -46,6 +47,7 @@ const api: BuddyApi = {
   app: {
     openExternal: (url) => ipcRenderer.send('app:openExternal', url),
     openLogs: () => ipcRenderer.send('app:openLogs'),
+    copyText: (text) => ipcRenderer.send('app:copyText', text),
     relaunch: () => ipcRenderer.send('app:relaunch'),
     reboot: () => ipcRenderer.invoke('app:reboot'),
     checkUpdates: () => ipcRenderer.invoke('app:checkUpdates'),

@@ -1,5 +1,5 @@
 import { app } from 'electron'
-import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto'
+import { createHash, randomBytes, scrypt, timingSafeEqual } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -67,8 +67,28 @@ export async function unlock(password: string): Promise<{ ok: boolean; waitMs?: 
   return { ok: false }
 }
 
+/*
+ * Owner mode. Changing the password is reserved for the app's owner: the PC
+ * must hold %APPDATA%\Buddy Optimizer\owner.key, a random 256-bit secret that
+ * only the owner has. Only its SHA-256 is in the source, and a random 256-bit
+ * value cannot be guessed from its hash, so publishing this is safe.
+ */
+const OWNER_KEY_SHA256 = '20b7c6be1e5c8efe7a6bc68f0924d8451d1c87d1bbb7d746ed2e145bc15f9604'
+
+export function isOwner(): boolean {
+  try {
+    const f = join(app.getPath('userData'), 'owner.key')
+    if (!existsSync(f)) return false
+    const key = readFileSync(f, 'utf8').trim()
+    if (key.length < 32 || key.length > 256) return false
+    const actual = createHash('sha256').update(key).digest()
+    return timingSafeEqual(actual, Buffer.from(OWNER_KEY_SHA256, 'hex'))
+  } catch { return false }
+}
+
 export async function changePassword(current: string, next: string): Promise<{ ok: boolean; error?: string }> {
   if (!unlocked) return { ok: false, error: 'locked' }
+  if (!isOwner()) return { ok: false, error: 'not-owner' }
   if (!(await check(current))) return { ok: false, error: 'wrong' }
   if (typeof next !== 'string' || next.length < 6 || next.length > 128) return { ok: false, error: 'length' }
   const salt = randomBytes(16)

@@ -42,7 +42,10 @@ check(typeof res.last?.cpu?.load === 'number', `CPU load sample: ${res.last?.cpu
 check(res.fontOk === true, 'Inter font loaded (CSP allows bundled fonts)')
 check(Array.isArray(res.consoleErrors) && res.consoleErrors.length === 0, `no console errors / CSP violations${res.consoleErrors?.length ? ':\n      ' + res.consoleErrors.join('\n      ') : ''}`)
 check(typeof res.last?.mem?.used === 'number' && res.last.mem.used > 0, 'memory sample')
-for (const s of ['1-lock', '2-dashboard', '3-optimize', '4-settings']) {
+check(typeof res.gamesView === 'string' && res.gamesView.length > 0, `Games section renders (${res.gamesView})`)
+check(res.pwVisible === res.owner, `Change password shown only to the owner (owner=${res.owner}, visible=${res.pwVisible})`)
+if (process.env.BUDDY_SMOKE_EXPECT_OWNER) check(String(res.owner) === (process.env.BUDDY_SMOKE_EXPECT_OWNER === '1' ? 'true' : 'false'), `owner key detection = ${res.owner}`)
+for (const s of ['1-lock', '2-dashboard', '3-optimize', '4-games', '5-security']) {
   const f = join(out, `${s}.png`)
   check(existsSync(f) && statSync(f).size > 20_000, `screenshot ${s}.png`)
 }

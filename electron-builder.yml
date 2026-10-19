@@ -61,4 +61,4 @@ publish:
   provider: github
   owner: itzBuddyyy
   repo: buddy-optimizer
-  releaseType: release
+  releaseType: draft   # CI creates the draft first, uploads into it, then publishes it

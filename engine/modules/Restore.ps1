@@ -25,6 +25,7 @@ function Restore-JournalEntry {
                 Remove-RegValueRaw -Path $e.Path -Name $e.Name
             }
         }
+        'File' { Restore-GameFileEntry $e }
         'Cmd' {
             $p = Start-Process -FilePath 'cmd.exe' -ArgumentList "/c $($e.Undo)" -Wait -PassThru -WindowStyle Hidden
             if ($p.ExitCode -ne 0) { throw "exit code $($p.ExitCode): $($e.Undo)" }
@@ -76,7 +77,7 @@ function Undo-SessionFile {
         try { Restore-JournalEntry $entries[$i]; $ok++ }
         catch {
             $fail++
-            $what = if ($entries[$i].Type -eq 'Reg') { "$($entries[$i].Path)\$($entries[$i].Name)" } else { $entries[$i].Description }
+            $what = if ($entries[$i].Type -eq 'Reg') { "$($entries[$i].Path)\$($entries[$i].Name)" } elseif ($entries[$i].Type -eq 'File') { $entries[$i].Path } else { $entries[$i].Description }
             Write-Fail "$what - $($_.Exception.Message)"
         }
     }

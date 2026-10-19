@@ -2,8 +2,17 @@ import { spawn } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { createServer, type Server, type Socket } from 'node:net'
+import { homedir } from 'node:os'
+import { app } from 'electron'
 import { resource } from './paths'
 import type { EngineLog, EngineProgress, EngineReady, EngineResult } from '@shared/types'
+
+// The agent runs elevated (possibly as another admin account if the UAC prompt
+// was answered with different credentials), so the signed-in user's folders
+// are passed along for per-user data such as game settings files.
+function userEnv() {
+  return { userProfile: homedir(), localAppData: process.env.LOCALAPPDATA ?? '', documents: app.getPath('documents') }
+}
 
 /**
  * Bridge to the itzBuddy engine (PowerShell). The app itself runs WITHOUT
@@ -105,7 +114,7 @@ export class Engine {
       if (!this.sock) return resolve({ id: 0, ok: false, error: 'not-running', data: null, stats: { ok: 0, skip: 0, fail: 0, dry: 0 }, reboot: false, journal: null })
       const id = this.nextId++
       this.pending.set(id, { resolve })
-      this.sock.write(JSON.stringify({ id, ...obj }) + '\n')
+      this.sock.write(JSON.stringify({ id, ...obj, env: userEnv() }) + '\n')
     })
   }
 

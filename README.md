@@ -30,6 +30,17 @@ Purple Void edition · Windows 10 / 11 · x64</p>
 - **Cleanup:** temporary files
 - **Network:** a quick connection refresh
 
+**Per-game optimization.** The **Games** section tunes each game's own settings file:
+
+| Game | What changes |
+|---|---|
+| Call of Duty: Warzone / Black Ops 7, Modern Warfare 4 | itzBuddy's competitive profiles: low shadows, effects, particles and water; no blur or depth of field; V-Sync off; uncapped FPS; exclusive fullscreen. NVIDIA Reflex or AMD Anti-Lag 2 depending on the GPU; frame generation off; config cloud sync off |
+| Fortnite | Performance rendering mode, low scalability presets, 100% 3D resolution, V-Sync and motion blur off, fullscreen |
+| Apex Legends | V-Sync, adaptive resolution, shadows, ambient occlusion, ragdolls and ADS blur off, exclusive fullscreen (the file can optionally be locked) |
+| VALORANT | Low detail, shadows and effects for every Riot account on the PC, V-Sync off, fullscreen. Anti-aliasing stays as you set it |
+
+Resolution, monitor, refresh rate, audio devices, sensitivity and key binds are never touched. Only keys that already exist in the file are changed, each value is checked against what the game allows, and nothing is written while the game is running. The file is backed up first and **Restore** puts it back exactly. Optionally, the game can be forced onto the dedicated GPU (laptops and dual-GPU PCs) or given high CPU priority. Game files and memory are never modified.
+
 **Tools:** Debloat, startup apps, look & feel, GPU (NVIDIA profile, AMD Adrenalin, driver pages), timer resolution, and advanced switches that each show their trade-off.
 
 **Undo everything.** Every registry value, service start type and command is recorded before it changes. Any session can be rolled back from **Optimize → Repair**.
@@ -37,7 +48,7 @@ Purple Void edition · Windows 10 / 11 · x64</p>
 **Xbox-aware.** Xbox mode keeps Xbox, Game Pass and the Microsoft Store working.
 
 **Other features:**
-- Password lock and auto-lock
+- Password lock and auto-lock. Only the owner's PC can change the password (see below)
 - Threshold alerts (GPU temperature, CPU, RAM, ping)
 - Tray mode, launch at login and automatic updates from GitHub Releases
 - Five languages: English, Italiano, Español, Français, Deutsch
@@ -52,7 +63,8 @@ Purple Void edition · Windows 10 / 11 · x64</p>
 
 Download `Buddy-Optimizer-Setup-x.y.z.exe` from [Releases](../../releases) and run it.
 
-- The app opens with a password lock. Your distributor gives you the password, and you can change it in **Settings → Security**.
+- The app opens with a password lock. Your distributor gives you the password.
+- **Change password** in **Settings → Security** appears only on the owner's PC, which holds a private key file at `%APPDATA%\Buddy Optimizer\owner.key`. The source contains only that key's SHA-256 hash. If you fork the project, generate your own key and replace `OWNER_KEY_SHA256` in `src/main/auth.ts`.
 - Monitoring runs **without** administrator rights. The optimization engine asks for administrator rights **once per session**, the first time you optimize something.
 - The installer is not code-signed yet, so Windows SmartScreen may show "Windows protected your PC". Click **More info → Run anyway**.
 
@@ -90,8 +102,8 @@ You can preview the interface in a browser with simulated data: `npx vite --conf
 ### Releasing
 
 1. The repository is `itzBuddyyy/buddy-optimizer` (set in `electron-builder.yml` and `package.json`).
-2. Bump `version` in `package.json`, commit, then push a tag: `git tag v1.0.1 && git push --tags`
-3. The **Release** workflow builds the installer and publishes it to GitHub Releases. Installed copies update themselves.
+2. Bump `version` in `package.json`, commit, then push a tag: `git tag v1.2.0 && git push origin v1.2.0`
+3. The **Release** workflow creates a draft release, uploads the installer, its blockmap and `latest.yml` into it, checks that all three are there, and then publishes the release. Installed copies update themselves.
 
 ## Project layout
 

@@ -300,6 +300,9 @@ html[data-material='native'], html[data-material='native'] body { background: tr
 .tag.bad { background: rgba(255, 107, 138, .14); color: var(--bad); }
 .tag.accent { background: rgba(160, 110, 255, .18); color: var(--orchid-300); }
 [data-theme='light'] .tag.accent { color: #6a2fd6; }
+[data-theme='light'] .tag.ok { color: #12784a; }
+[data-theme='light'] .tag.warn { color: #8a5200; }
+[data-theme='light'] .tag.bad { color: #b81f45; }
 
 .muted { color: var(--text-2); }
 .faint { color: var(--text-3); }

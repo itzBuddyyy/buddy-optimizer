@@ -1,8 +1,8 @@
-import { app, BrowserWindow, ipcMain, Menu, nativeTheme, Notification, powerMonitor, session, shell, Tray } from 'electron'
+import { app, BrowserWindow, clipboard, ipcMain, Menu, nativeTheme, Notification, powerMonitor, session, shell, Tray } from 'electron'
 import { spawn } from 'node:child_process'
 import { join } from 'node:path'
 import { loadSettings, saveSettings } from './settings'
-import { changePassword, isUnlocked, lock, unlock } from './auth'
+import { changePassword, isOwner, isUnlocked, lock, unlock } from './auth'
 import { Monitor } from './monitor'
 import { Engine } from './engine'
 import { evaluateAlerts } from './alerts'
@@ -129,9 +129,16 @@ function runSmokeTest(w: BrowserWindow) {
       await shot('3-optimize')
       await js(`window.dispatchEvent(new KeyboardEvent('keydown', { key: '3', ctrlKey: true }))`)
       await wait(2500)
-      await shot('4-settings')
+      await shot('4-games')
+      const gamesView = await js(`document.querySelector('.page-head h1')?.textContent ?? ''`)
+      await js(`window.dispatchEvent(new KeyboardEvent('keydown', { key: '4', ctrlKey: true }))`)
+      await wait(2500)
+      await js(`[...document.querySelectorAll('.settings-nav button')][5]?.click()`)
+      await wait(2000)
+      await shot('5-security')
+      const pwVisible = await js(`document.querySelectorAll('input[type=password]').length === 3`)
       const fontOk = await js(`document.fonts.check('600 16px "Inter Variable"')`)
-      fs.writeFileSync(join(out, 'result.json'), JSON.stringify({ unlocked: isUnlocked(), monitorTick: ticks, fontOk, consoleErrors, info: monitor.info, last: monitor.last }, null, 2))
+      fs.writeFileSync(join(out, 'result.json'), JSON.stringify({ unlocked: isUnlocked(), monitorTick: ticks, fontOk, gamesView, owner: isOwner(), pwVisible, consoleErrors, info: monitor.info, last: monitor.last }, null, 2))
     } catch (e) {
       fs.writeFileSync(join(out, 'result.json'), JSON.stringify({ error: String(e) }))
     }
@@ -213,6 +220,7 @@ function guard<T extends unknown[], R>(fn: (...a: T) => R) {
 function registerIpc() {
   ipcMain.handle('auth:unlock', (_e, pw: string) => unlock(pw))
   ipcMain.handle('auth:change', guard((cur: string, next: string) => changePassword(cur, next)))
+  ipcMain.handle('auth:isOwner', guard(() => isOwner()))
   ipcMain.handle('auth:lock', () => doLock())
 
   ipcMain.handle('settings:get', () => loadSettings())
@@ -253,6 +261,10 @@ function registerIpc() {
     return res
   }))
   ipcMain.handle('engine:query', guard((what: string) => engine.query(what)))
+
+  ipcMain.on('app:copyText', (_e, text: unknown) => {
+    if (isUnlocked() && typeof text === 'string' && text.length > 0 && text.length <= 500) clipboard.writeText(text)
+  })
 
   ipcMain.on('win:minimize', () => win?.minimize())
   ipcMain.on('win:maximize', () => (win?.isMaximized() ? win.unmaximize() : win?.maximize()))

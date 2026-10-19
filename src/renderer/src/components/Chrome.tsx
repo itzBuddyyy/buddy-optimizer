@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
-import { Gauge, Lock, Minus, Settings as Cog, Sparkles, Square, X, Copy } from 'lucide-react'
+import { Gamepad2, Gauge, Lock, Minus, Settings as Cog, Sparkles, Square, X, Copy } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useSettings } from '@/lib/store'
 import { spring } from '@/lib/motion'
@@ -45,11 +45,12 @@ export function TitleBar({ title }: { title?: string }) {
   )
 }
 
-export type View = 'dashboard' | 'optimize' | 'settings'
+export type View = 'dashboard' | 'optimize' | 'games' | 'settings'
 
 const items: { id: View; icon: typeof Gauge; label: TKey }[] = [
   { id: 'dashboard', icon: Gauge, label: 'nav.dashboard' },
   { id: 'optimize', icon: Sparkles, label: 'nav.optimize' },
+  { id: 'games', icon: Gamepad2, label: 'nav.games' },
   { id: 'settings', icon: Cog, label: 'nav.settings' }
 ]
 

@@ -8,6 +8,7 @@ import { Backdrop, Sidebar, TitleBar, type View } from '@/components/Chrome'
 import { Lock } from '@/views/Lock'
 import { Dashboard } from '@/views/Dashboard'
 import { Optimize } from '@/views/Optimize'
+import { Games } from '@/views/Games'
 import { SettingsView } from '@/views/Settings'
 import { useT } from '@/i18n'
 
@@ -18,14 +19,15 @@ function Shell() {
   const contentRef = useRef<HTMLElement>(null)
   // each section starts at the top (like switching panes in System Settings)
   useEffect(() => { contentRef.current?.scrollTo({ top: 0 }) }, [view])
-  const titles: Record<View, string> = { dashboard: t('nav.dashboard'), optimize: t('nav.optimize'), settings: t('nav.settings') }
-  // keyboard: Ctrl+1/2/3 switch sections, Ctrl+L locks
+  const titles: Record<View, string> = { dashboard: t('nav.dashboard'), optimize: t('nav.optimize'), games: t('nav.games'), settings: t('nav.settings') }
+  // keyboard: Ctrl+1..4 switch sections, Ctrl+L locks
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!e.ctrlKey) return
       if (e.key === '1') setView('dashboard')
       else if (e.key === '2') setView('optimize')
-      else if (e.key === '3' || e.key === ',') setView('settings')
+      else if (e.key === '3') setView('games')
+      else if (e.key === '4' || e.key === ',') setView('settings')
       else if (e.key.toLowerCase() === 'l') api.auth.lock()
       else return
       e.preventDefault()
@@ -41,6 +43,7 @@ function Shell() {
         <AnimatePresence mode="wait">
           {view === 'dashboard' && <Dashboard key="d" />}
           {view === 'optimize' && <Optimize key="o" />}
+          {view === 'games' && <Games key="g" />}
           {view === 'settings' && <SettingsView key="s" />}
         </AnimatePresence>
       </main>

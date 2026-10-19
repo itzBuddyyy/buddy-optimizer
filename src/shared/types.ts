@@ -112,6 +112,17 @@ export interface EngineReady {
   sys: Record<string, unknown>; wmi: boolean; xboxDefault: boolean; backupDir: string; logDir: string
 }
 
+export type GameId = 'cod' | 'fortnite' | 'apex' | 'valorant'
+export interface GameState {
+  id: GameId
+  detected: boolean
+  running: boolean
+  configs: { name: string; label: string; folder: string; modified: string }[]
+  exes: string[]
+  lastBackup: string | null
+  multiGpu: boolean
+}
+
 export interface UpdateStatus { state: 'idle' | 'checking' | 'available' | 'none' | 'downloading' | 'ready' | 'error'; version?: string; percent?: number; error?: string }
 
 export interface BuddyApi {
@@ -119,6 +130,8 @@ export interface BuddyApi {
   auth: {
     unlock(password: string): Promise<{ ok: boolean; waitMs?: number }>
     change(current: string, next: string): Promise<{ ok: boolean; error?: string }>
+    /** true only on the owner's PC (holds the owner key) */
+    isOwner(): Promise<boolean>
     lock(): Promise<void>
     onLocked(cb: () => void): () => void
   }
@@ -145,6 +158,7 @@ export interface BuddyApi {
   app: {
     openExternal(url: string): void
     openLogs(): void
+    copyText(text: string): void
     relaunch(): void
     reboot(): Promise<void>
     checkUpdates(): Promise<void>

@@ -215,6 +215,9 @@ function Security() {
   const [next, setNext] = useState('')
   const [again, setAgain] = useState('')
   const [busy, setBusy] = useState(false)
+  // password changes are reserved for the owner's PC (checked again in the main process)
+  const [owner, setOwner] = useState(false)
+  useEffect(() => { api.auth.isOwner().then(setOwner).catch(() => setOwner(false)) }, [])
   async function change() {
     if (next.length < 6) { toast('bad', t('set.pwShort')); return }
     if (next !== again) { toast('bad', t('set.pwMismatch')); return }
@@ -222,7 +225,7 @@ function Security() {
     const r = await api.auth.change(cur, next)
     setBusy(false)
     if (r.ok) { toast('ok', t('set.pwChanged')); setCur(''); setNext(''); setAgain('') }
-    else toast('bad', r.error === 'wrong' ? t('set.pwWrong') : t('set.pwShort'))
+    else toast('bad', r.error === 'wrong' ? t('set.pwWrong') : r.error === 'not-owner' ? t('set.pwOwner') : t('set.pwShort'))
   }
   return (
     <>
@@ -233,7 +236,7 @@ function Security() {
         </Setting>
         <Setting title={t('set.lockNow')} desc={t('set.lockNowD')}><button className="btn sm" onClick={() => api.auth.lock()}><Lock size={13} />{t('nav.lock')}</button></Setting>
       </Group>
-      <Group title={t('set.changePw')}>
+      {owner && <Group title={t('set.changePw')}>
         <div style={{ padding: 18, display: 'grid', gap: 10, maxWidth: 420 }}>
           <input className="input" type="password" placeholder={t('set.currentPw')} value={cur} onChange={(e) => setCur(e.target.value)} autoComplete="current-password" />
           <input className="input" type="password" placeholder={t('set.newPw')} value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" />
@@ -241,7 +244,7 @@ function Security() {
           <div><button className="btn primary sm" disabled={!cur || !next || busy} onClick={change}><KeyRound size={13} />{t('set.changePw')}</button></div>
           <div className="faint" style={{ fontSize: 12, lineHeight: 1.5 }}>{t('set.lockNote')}</div>
         </div>
-      </Group>
+      </Group>}
     </>
   )
 }
