@@ -1,0 +1,44 @@
+{
+  "name": "buddy-optimizer",
+  "productName": "Buddy Optimizer",
+  "version": "1.0.0",
+  "description": "Premium Windows optimizer and real-time performance monitor for competitive gaming.",
+  "author": "itzBuddy",
+  "license": "MIT",
+  "homepage": "https://github.com/itzBuddyyy/buddy-optimizer",
+  "main": "out/main/index.js",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "build:native": "dotnet build native/BuddyMonitor -c Release -o build-native/monitor",
+    "build:icons": "node scripts/build-icons.mjs",
+    "preview": "electron-vite preview",
+    "dist": "npm run build:native && npm run build:icons && electron-vite build && electron-builder --win --x64",
+    "dist:dir": "npm run build:native && electron-vite build && electron-builder --win --x64 --dir",
+    "release": "npm run build:native && npm run build:icons && electron-vite build && electron-builder --win --x64 --publish always",
+    "test:smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  },
+  "devDependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "electron": "^44.9.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^6.0.0",
+    "lucide-react": "^1.59.0",
+    "motion": "^14.3.0",
+    "png-to-ico": "^3.0.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "~5.9.0",
+    "vite": "^8.3.4"
+  }
+}

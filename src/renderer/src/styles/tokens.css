@@ -1,0 +1,106 @@
+/*
+ * Buddy Optimizer design tokens
+ * Base hue: "Purple Void" #442244 - a deep plum. Accents lean violet -> orchid
+ * so they glow against the void without turning neon.
+ */
+:root {
+  /* palette */
+  --void-950: #07030c;
+  --void-900: #0b0612;
+  --void-850: #120a1c;
+  --void-800: #1a0f27;
+  --void-700: #2a1840;
+  --void-600: #442244;   /* Purple Void */
+  --violet-500: #7c4dff;
+  --violet-400: #9a7bff;
+  --orchid-400: #c78cff;
+  --orchid-300: #dcb4ff;
+  --rose-300: #f5b8e8;
+
+  --grad-accent: linear-gradient(135deg, #7c4dff 0%, #b15cff 48%, #ef8fd8 100%);
+  --grad-accent-soft: linear-gradient(135deg, rgba(124, 77, 255, .28), rgba(239, 143, 216, .18));
+  --grad-void: radial-gradient(120% 140% at 0% 0%, #2a1840 0%, #120a1c 45%, #07030c 100%);
+
+  --ok: #5fe0a5;
+  --warn: #ffc56b;
+  --bad: #ff6b8a;
+  --info: #8ab4ff;
+
+  /* text */
+  --text-1: rgba(255, 255, 255, .96);
+  --text-2: rgba(255, 255, 255, .66);
+  --text-3: rgba(255, 255, 255, .42);
+  --text-on-accent: #fff;
+
+  /* glass material (strength set from settings via --glass) */
+  --glass: .7;
+  --blur: calc(10px + var(--glass) * 30px);
+  --glass-fill: rgba(255, 255, 255, calc(.035 + (1 - var(--glass)) * .05));
+  --glass-fill-strong: rgba(255, 255, 255, calc(.06 + (1 - var(--glass)) * .06));
+  --glass-stroke: rgba(255, 255, 255, .09);
+  --glass-stroke-strong: rgba(255, 255, 255, .16);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, .10), inset 0 0 0 .5px rgba(255, 255, 255, .04);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, .25), 0 8px 24px -12px rgba(0, 0, 0, .45);
+  --shadow-2: 0 2px 6px rgba(0, 0, 0, .25), 0 24px 60px -20px rgba(10, 0, 30, .75);
+  --shadow-glow: 0 10px 40px -10px rgba(140, 80, 255, .55);
+
+  /* shape */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+
+  /* spacing (density scales these) */
+  --density: 1;
+  --s-1: calc(4px * var(--density));
+  --s-2: calc(8px * var(--density));
+  --s-3: calc(12px * var(--density));
+  --s-4: calc(16px * var(--density));
+  --s-5: calc(20px * var(--density));
+  --s-6: calc(24px * var(--density));
+  --s-8: calc(32px * var(--density));
+
+  /* type */
+  --font: 'Inter Variable', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --fs-xs: 11px;
+  --fs-sm: 12.5px;
+  --fs-md: 14px;
+  --fs-lg: 17px;
+  --fs-xl: 22px;
+  --fs-2xl: 30px;
+  --fs-3xl: 44px;
+
+  /* motion: Apple-like springs approximated with linear() easing */
+  --spring: linear(0, 0.0039, 0.0157, 0.0352, 0.0625 9.09%, 0.1407, 0.25, 0.3908 22.73%, 0.5593, 0.7186, 0.8536, 0.9541, 1.0186, 1.0498 50%, 1.0573, 1.0522, 1.0399 61.36%, 1.0119 72.73%, 0.9995 84.09%, 1);
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --dur-1: 140ms;
+  --dur-2: 260ms;
+  --dur-3: 480ms;
+}
+
+/* Light theme: same structure, frosted milk glass over a lavender haze */
+[data-theme='light'] {
+  --text-1: rgba(22, 8, 34, .94);
+  --text-2: rgba(22, 8, 34, .64);
+  --text-3: rgba(22, 8, 34, .42);
+  --glass-fill: rgba(255, 255, 255, calc(.48 + (1 - var(--glass)) * .25));
+  --glass-fill-strong: rgba(255, 255, 255, calc(.62 + (1 - var(--glass)) * .2));
+  --glass-stroke: rgba(68, 34, 68, .10);
+  --glass-stroke-strong: rgba(68, 34, 68, .18);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, .85), inset 0 0 0 .5px rgba(255, 255, 255, .6);
+  --shadow-1: 0 1px 2px rgba(60, 20, 90, .08), 0 8px 24px -12px rgba(60, 20, 90, .18);
+  --shadow-2: 0 2px 6px rgba(60, 20, 90, .08), 0 24px 60px -24px rgba(60, 20, 90, .30);
+  --grad-void: radial-gradient(120% 140% at 0% 0%, #f3e9ff 0%, #ece3f7 45%, #e4dbef 100%);
+}
+
+/* Motion levels */
+[data-motion='reduced'] { --dur-1: 80ms; --dur-2: 140ms; --dur-3: 200ms; --spring: var(--ease-out); }
+[data-motion='off'] { --dur-1: 0ms; --dur-2: 0ms; --dur-3: 0ms; }
+[data-motion='off'] *, [data-motion='off'] *::before, [data-motion='off'] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+[data-density='compact'] { --density: .78; }

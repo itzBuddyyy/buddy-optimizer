@@ -1,0 +1,64 @@
+appId: com.itzbuddy.buddyoptimizer
+productName: Buddy Optimizer
+copyright: Copyright © 2026 itzBuddy
+executableName: BuddyOptimizer
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - out/**
+  - package.json
+  - "!**/*.map"
+
+asar: true
+
+# Shipped next to the app (not inside the asar) so they can be executed
+extraResources:
+  - from: build-native/monitor
+    to: monitor
+  - from: engine
+    to: engine
+    filter: ["**/*", "!**/*.md"]
+  - from: build/icon.ico
+    to: icons/icon.ico
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.ico
+  # The app runs as the normal user. Only the optimization engine asks for
+  # admin (one UAC prompt per session), so monitoring never needs elevation.
+  requestedExecutionLevel: asInvoker
+  artifactName: Buddy-Optimizer-Setup-${version}.${ext}
+
+nsis:
+  oneClick: false
+  # Per-machine install into Program Files: the elevated engine scripts then
+  # live in a folder only administrators can modify.
+  perMachine: true
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Buddy Optimizer
+  menuCategory: false
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerHeaderIcon: build/icon.ico
+  installerSidebar: build/installerSidebar.bmp
+  uninstallerSidebar: build/uninstallerSidebar.bmp
+  installerHeader: build/installerHeader.bmp
+  multiLanguageInstaller: true
+  installerLanguages: [en_US, it_IT, es_ES, fr_FR, de_DE]
+  include: build/installer.nsh
+
+publish:
+  provider: github
+  owner: itzBuddyyy
+  repo: buddy-optimizer
+  releaseType: release

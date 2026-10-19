@@ -1,0 +1,18 @@
+# Normalize text to LF in the repo, except Windows scripts which must stay CRLF
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.nsh text eol=crlf
+*.csproj text eol=crlf
+*.manifest text eol=crlf
+
+# Binaries
+*.exe binary
+*.dll binary
+*.ico binary
+*.png binary
+*.bmp binary
+*.pow binary
+*.nip binary
+*.woff2 binary
