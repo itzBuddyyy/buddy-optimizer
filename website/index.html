@@ -14,6 +14,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,650;14..32,800;14..32,900&display=swap" rel="stylesheet">
+<script>
+  // No hardware acceleration (e.g. Chrome's setting turned off): WebGL then runs in software and
+  // refuses a context with failIfMajorPerformanceCaveat. Switch to the light rendering path.
+  try { if (!document.createElement('canvas').getContext('webgl', { failIfMajorPerformanceCaveat: true })) document.documentElement.classList.add('lite') }
+  catch { document.documentElement.classList.add('lite') }
+</script>
 <style>
   :root {
     --bg: #07030c;
@@ -50,11 +56,11 @@
 
   /* ---------- the colour field behind the glass (slowly drifting light) */
   .aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: var(--bg); }
-  .aurora i { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .55; will-change: transform; }
-  .aurora i:nth-child(1) { width: 60vw; height: 60vw; left: -18vw; top: -22vw; background: #5b2bd6; animation: drift1 38s ease-in-out infinite alternate; }
-  .aurora i:nth-child(2) { width: 50vw; height: 50vw; right: -16vw; top: 18vh; background: #8a2f7a; animation: drift2 44s ease-in-out infinite alternate; }
-  .aurora i:nth-child(3) { width: 46vw; height: 46vw; left: 22vw; bottom: -26vw; background: #442244; opacity: .9; animation: drift3 50s ease-in-out infinite alternate; }
-  .aurora i:nth-child(4) { width: 26vw; height: 26vw; left: 52vw; top: 46vh; background: #c25cc0; opacity: .28; animation: drift1 31s ease-in-out infinite alternate-reverse; }
+  .aurora i { position: absolute; border-radius: 50%; opacity: .7; will-change: transform; background: radial-gradient(closest-side, var(--c), transparent); }
+  .aurora i:nth-child(1) { width: 60vw; height: 60vw; left: -18vw; top: -22vw; --c: #5b2bd6; animation: drift1 38s ease-in-out infinite alternate; }
+  .aurora i:nth-child(2) { width: 50vw; height: 50vw; right: -16vw; top: 18vh; --c: #8a2f7a; animation: drift2 44s ease-in-out infinite alternate; }
+  .aurora i:nth-child(3) { width: 46vw; height: 46vw; left: 22vw; bottom: -26vw; --c: #6a2f6a; opacity: .9; animation: drift3 50s ease-in-out infinite alternate; }
+  .aurora i:nth-child(4) { width: 26vw; height: 26vw; left: 52vw; top: 46vh; --c: #c25cc0; opacity: .35; animation: drift1 31s ease-in-out infinite alternate-reverse; }
   @keyframes drift1 { to { transform: translate(18vw, 14vh) scale(1.15); } }
   @keyframes drift2 { to { transform: translate(-22vw, 20vh) scale(.9); } }
   @keyframes drift3 { to { transform: translate(-10vw, -22vh) scale(1.2); } }
@@ -144,8 +150,8 @@
   .tour-stage { position: sticky; top: 96px; height: calc(100svh - 130px); display: grid; align-content: center; perspective: 1400px; }
   .tour-win { position: relative; padding: 8px; border-radius: var(--r); transform-style: preserve-3d; transition: transform .5s var(--ease); }
   .tour-win .screens { position: relative; aspect-ratio: 1304 / 795; border-radius: calc(var(--r) - 8px); overflow: hidden; }
-  .tour-win img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06); filter: blur(6px); transition: opacity .6s var(--ease), transform .9s var(--ease), filter .6s; }
-  .tour-win img.show { opacity: 1; transform: none; filter: none; }
+  .tour-win img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06); transition: opacity .6s var(--ease), transform .9s var(--ease); }
+  .tour-win img.show { opacity: 1; transform: none; }
   .tour-cap { margin-top: 18px; color: var(--text-2); font-size: var(--s-s); }
   .tour-copy h2 { max-width: 12ch; }
   .tour-copy > p { margin-top: 16px; color: var(--text-2); }
@@ -232,8 +238,8 @@
   .t-nav a, .t-social a { text-decoration: none; } .t-nav a:hover, .t-social a:hover { text-decoration: underline; text-underline-offset: 4px; }
   .t-social { grid-column: span 2; }
   .t-time { grid-column: span 3; } .t-time b { font-size: 34px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
-  .t-word { grid-column: span 8; min-height: 300px; justify-content: center; align-items: center; overflow: hidden; }
-  .t-word span { font-size: 7.6vw; font-weight: 900; letter-spacing: -0.05em; line-height: 1; white-space: nowrap; color: #fff; }
+  .t-word { grid-column: span 8; min-height: 300px; justify-content: center; align-items: center; overflow: hidden; container-type: inline-size; }
+  .t-word span { font-size: 13cqi; font-weight: 900; letter-spacing: -0.05em; line-height: 1; white-space: nowrap; color: #fff; }
   .t-ask { grid-column: span 4; min-height: 300px; text-decoration: none; background: rgba(124,77,255,.28); transition: background .3s; }
   .t-ask:hover { background: rgba(124,77,255,.4); }
   .t-ask p { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
@@ -242,8 +248,8 @@
   .tile-label { font-size: var(--s-s); color: var(--text-2); margin-bottom: 10px; }
 
   /* ---------- entrances (content stays visible without script) */
-  .js .rise { opacity: 0; transform: translateY(28px); filter: blur(6px); transition: opacity .8s var(--ease), transform .9s var(--ease), filter .8s var(--ease); transition-delay: calc(var(--i, 0) * 80ms); }
-  .js .rise.in { opacity: 1; transform: none; filter: none; }
+  .js .rise { opacity: 0; transform: translateY(28px); transition: opacity .8s var(--ease), transform .9s var(--ease); transition-delay: calc(var(--i, 0) * 80ms); }
+  .js .rise.in { opacity: 1; transform: none; }
 
   @media (max-width: 1000px) {
     .nav ul { display: none; }
@@ -261,7 +267,6 @@
     .t-word, .t-ask, .t-state { grid-column: span 2; }
     .t-nav, .t-social, .t-time { grid-column: span 1; }
     .t-word, .t-ask { min-height: 170px; }
-    .t-word span { font-size: 14vw; }
     .stage3d { height: 64vw; }
   }
   @media (max-width: 620px) {
@@ -283,10 +288,19 @@
     details p { padding: 0 20px 20px; font-size: 16px; }
     .t-nav, .t-social, .t-time { grid-column: span 2; min-height: 0; }
   }
+  /* ---------- lite: same look, no live blur (each blurred pixel costs the CPU every frame) */
+  .lite .aurora i { animation: none; will-change: auto; }
+  .lite .grain { display: none; }
+  .lite .glass, .lite .btn.ghost, .lite .gswitch .track { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .lite .glass { background: rgba(30, 15, 44, .82); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), inset 0 0 0 1px rgba(255,255,255,.1); }
+  .lite .btn.ghost, .lite .gswitch .track { background: rgba(44, 24, 62, .92); }
+  .lite .glass::after { display: none; }
+  .lite .win, .lite .stack { transition: none; }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
     html { scroll-behavior: auto; }
-    .js .rise { opacity: 1; transform: none; filter: none; }
+    .js .rise { opacity: 1; transform: none; }
   }
 </style>
 </head>
@@ -543,6 +557,7 @@ function layout() {
   stack.style.transform = `rotateX(${tiltY}deg) rotateY(${tiltX}deg)`
 }
 function heroScroll() {
+  if (stage.getBoundingClientRect().bottom < -200 && spread === 1) return
   if (reduce) { spread = .6; return layout() }
   const r = stage.getBoundingClientRect()
   spread = clamp(1 - (r.top - innerHeight * .1) / (innerHeight * .8), 0, 1)
@@ -681,10 +696,11 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 
 const host = document.getElementById('gauge')
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+const lite = document.documentElement.classList.contains('lite')
 let renderer = null
-try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }) } catch { /* no WebGL: the icon image stays */ }
+try { renderer = new THREE.WebGLRenderer({ antialias: !lite, alpha: true }) } catch { /* no WebGL: the icon image stays */ }
 if (renderer) {
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+  renderer.setPixelRatio(lite ? 1 : Math.min(devicePixelRatio, 2))
   renderer.toneMapping = THREE.ACESFilmicToneMapping
   renderer.outputColorSpace = THREE.SRGBColorSpace
   host.prepend(renderer.domElement)
@@ -698,7 +714,7 @@ if (renderer) {
 
   const rig = new THREE.Group(); scene.add(rig)
   // glass squircle (the icon's body)
-  const body = new THREE.Mesh(new RoundedBoxGeometry(2.6, 2.6, .5, 10, .62), new THREE.MeshPhysicalMaterial({
+  const body = new THREE.Mesh(new RoundedBoxGeometry(2.6, 2.6, .5, 10, .62), new (lite ? THREE.MeshStandardMaterial : THREE.MeshPhysicalMaterial)(lite ? { color: 0x5a2d7a, metalness: .3, roughness: .25 } : {
     color: 0x5a2d7a, metalness: .05, roughness: .08, transmission: .55, thickness: 1.2, ior: 1.45, clearcoat: 1, clearcoatRoughness: .05,
     attenuationColor: new THREE.Color(0x442244), attenuationDistance: 1.4
   }))
@@ -745,10 +761,14 @@ if (renderer) {
   new ResizeObserver(size).observe(host); size()
 
   const clock = new THREE.Clock()
+  let rendered = false
   renderer.setAnimationLoop(() => {
     if (!visible) return
     const t = clock.getElapsedTime()
     const target = window.__gaugeTarget ?? .35
+    // lite: no idle float, and no frame at all while nothing is moving
+    if (lite && rendered && !dragging && Math.abs(velY) < .0005 && Math.abs(target - value) < .002) return
+    rendered = true
     value += (target - value) * (reduce ? 1 : .06)
     if (Math.abs(value - shown) > .002) {
       shown = value
@@ -759,10 +779,11 @@ if (renderer) {
       glowMat.emissiveIntensity = .8 + value * 1.6
       readout.textContent = Math.round(value * 100)
     }
-    if (!dragging) { velY *= .94; rotY += velY + (reduce ? 0 : Math.sin(t * .6) * .0015); rotX += (.18 - rotX) * .02 }
-    const scrollTurn = (host.getBoundingClientRect().top / innerHeight - .3) * .6
-    rig.rotation.set(rotX + (reduce ? 0 : Math.sin(t * .8) * .03), rotY + scrollTurn, 0)
-    rig.position.y = reduce ? 0 : Math.sin(t * 1.1) * .06
+    const still = reduce || lite
+    if (!dragging) { velY *= .94; rotY += velY + (still ? 0 : Math.sin(t * .6) * .0015); rotX += (.18 - rotX) * .02 }
+    const scrollTurn = still ? 0 : (host.getBoundingClientRect().top / innerHeight - .3) * .6
+    rig.rotation.set(rotX + (still ? 0 : Math.sin(t * .8) * .03), rotY + scrollTurn, 0)
+    rig.position.y = still ? 0 : Math.sin(t * 1.1) * .06
     renderer.render(scene, camera)
   })
 }
