@@ -4,7 +4,7 @@
 
 <h1 align="center">Buddy Optimizer</h1>
 <p align="center"><b>A real-time performance monitor and one-click Windows tuner for competitive gaming.</b><br>
-Purple Void edition · Windows 10 / 11 · x64</p>
+Purple Void edition · Windows 10 / 11 · x64 · <a href="https://itzbuddyyy.github.io/buddy-optimizer/">Website</a></p>
 
 <p align="center">
   <img src="docs/screenshots/dashboard.png" width="860" alt="Dashboard">

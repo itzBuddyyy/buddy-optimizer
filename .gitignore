@@ -8,3 +8,4 @@ native/**/obj/
 .DS_Store
 Thumbs.db
 .claude/
+.taste-skill/

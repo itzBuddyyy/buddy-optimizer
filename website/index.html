@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buddy Optimizer: one-click PC tuning for competitive gaming</title>
+<meta name="description" content="Free Windows app that tunes your gaming PC in one click, shows live hardware data, and sets competitive settings for Call of Duty, Fortnite, Apex Legends and VALORANT. Every change can be undone.">
+<meta name="theme-color" content="#0b0612">
+<link rel="icon" href="assets/icon.png">
+<meta property="og:title" content="Buddy Optimizer">
+<meta property="og:description" content="One click. More FPS, less lag. Free for Windows 10 and 11.">
+<meta property="og:image" content="assets/dashboard.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,650;14..32,800;14..32,900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #0b0612;      /* app window ground */
+    --purple: #442244;    /* Purple Void */
+    --violet: #6f42e8;    /* app accent */
+    --paper: #f4eefb;
+    --orchid: #dcb4ff;
+    --rose: #f2a3dd;      /* call-to-action field */
+    --deep: #1b0a20;
+    --ink-dark: #160a1c;
+    --ink-light: #ffffff;
+    --font: 'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+    --m: clamp(20px, 3vw, 40px);          /* the page's one pair of outer margins */
+    --r: 22px;                             /* the one radius (app windows / glass) */
+    --s-xl: clamp(64px, 9.5vw, 150px);
+    --s-l: clamp(36px, 4.6vw, 68px);
+    --s-m: clamp(22px, 2.2vw, 32px);
+    --s-b: clamp(16px, 1.2vw, 19px);
+    --s-s: 14px;
+    --ease: cubic-bezier(.22, 1, .36, 1);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--void); color: var(--ink-light); font-family: var(--font); font-size: var(--s-b); line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: clip; }
+  img { display: block; max-width: 100%; height: auto; }
+  a { color: inherit; }
+  h1, h2, h3 { margin: 0; font-weight: 800; letter-spacing: -0.035em; line-height: .95; }
+  p { margin: 0; }
+  :focus-visible { outline: 3px solid var(--orchid); outline-offset: 3px; border-radius: 6px; }
+  ::selection { background: var(--orchid); color: var(--ink-dark); }
+  .wrap { padding-inline: var(--m); }
+
+  /* ---------- buttons: one shape, fully round, flat fill */
+  .btn { display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 26px; border-radius: 999px; border: 0; font: 650 16px/1 var(--font); text-decoration: none; cursor: pointer; background: var(--ink-light); color: var(--ink-dark); transition: transform .2s var(--ease), background .2s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: scale(.96); }
+  .btn.dark { background: var(--ink-dark); color: #fff; }
+  .btn svg { width: 18px; height: 18px; }
+  .link { font-weight: 650; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; }
+  .link:hover { text-decoration-thickness: 3px; }
+
+  /* ---------- glass header (Apple-style, requested by the client) */
+  .nav { position: fixed; inset: 14px var(--m) auto; z-index: 40; display: flex; align-items: center; gap: 24px; height: 60px; padding: 0 10px 0 16px; border-radius: 999px;
+         background: rgba(255,255,255,.08); backdrop-filter: blur(24px) saturate(1.6); -webkit-backdrop-filter: blur(24px) saturate(1.6); color: var(--nav-ink, #fff); transition: color .3s, background .3s; }
+  .nav.light { --nav-ink: var(--ink-dark); background: rgba(255,255,255,.55); }
+  .nav .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -0.02em; text-decoration: none; font-size: 17px; }
+  .nav .brand img { width: 30px; height: 30px; border-radius: 8px; }
+  .nav ul { display: flex; gap: 22px; margin: 0 0 0 auto; padding: 0; list-style: none; font-size: 15px; font-weight: 500; }
+  .nav ul a { text-decoration: none; opacity: .85; } .nav ul a:hover { opacity: 1; }
+  .nav .btn { height: 42px; padding: 0 20px; font-size: 15px; }
+  .nav.light .btn { background: var(--ink-dark); color: #fff; }
+
+  /* ---------- hero: headline across two fields */
+  .hero { position: relative; background: var(--purple); }
+  .hero-top { height: 100svh; position: relative; background: linear-gradient(var(--void) 50%, var(--purple) 50%); /* two flat fields meeting at a hard seam, not a fade */ }
+  .headline { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-62%); text-align: center; pointer-events: none; }
+  .headline h1 { font-size: var(--s-xl); font-weight: 900; line-height: .86; letter-spacing: -0.045em; text-transform: uppercase; }
+  .headline .ink-top { color: var(--orchid); clip-path: inset(0 0 calc(38% ) 0); }
+  .headline .ink-bot { position: absolute; inset: 0; color: var(--deep); clip-path: inset(calc(62%) 0 0 0); }
+  .hero-sub { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%); width: min(620px, calc(100% - 2*var(--m))); text-align: center; font-size: clamp(17px, 1.5vw, 21px); }
+  .hero-cta { position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); display: flex; gap: 14px; align-items: center; white-space: nowrap; }
+  .hero-shot { padding: 0 var(--m) 140px; }
+  .window { border-radius: var(--r); overflow: hidden; background: rgba(255,255,255,.06); padding: 8px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+  .window img { border-radius: calc(var(--r) - 8px); width: 100%; }
+  .hero-shot .window { max-width: 1240px; margin: 0 auto; transform-origin: 50% 0; will-change: transform; }
+  .hero-shot figcaption { text-align: center; margin-top: 18px; font-size: var(--s-s); opacity: .8; }
+
+  /* ---------- chapter: one control, blown up */
+  .switch-ch { position: relative; min-height: 92svh; overflow: hidden; background: var(--violet); color: #fff; transition: background .45s var(--ease), color .45s var(--ease); }
+  .switch-ch.on { background: var(--paper); color: var(--ink-dark); }
+  .switch-ch .copy { position: relative; z-index: 2; padding: 120px var(--m) 0; max-width: 720px; }
+  .switch-ch h2 { font-size: var(--s-l); }
+  .switch-ch .copy p { margin-top: 18px; max-width: 46ch; }
+  .switch-ch ul { margin: 28px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; max-width: 520px; }
+  .switch-ch li { display: flex; justify-content: space-between; gap: 16px; padding: 14px 18px; border-radius: 14px; background: rgba(255,255,255,.12); font-weight: 500; }
+  .switch-ch.on li { background: rgba(68,34,68,.08); }
+  .switch-ch li b { font-weight: 800; }
+  .big-toggle { position: absolute; right: -5vw; bottom: 9vh; z-index: 1; font-size: clamp(10px, 1.75vw, 28px); }
+  .big-toggle button { display: flex; align-items: center; gap: 1em; width: 30em; height: 13em; padding: 1.2em; border: 0; border-radius: 999px; background: rgba(0,0,0,.22); cursor: pointer; transition: background .45s var(--ease); }
+  .switch-ch.on .big-toggle button { background: var(--purple); }
+  .big-toggle .knob { width: 10.6em; height: 10.6em; border-radius: 50%; background: #fff; transform: translateX(0); transition: transform .6s cubic-bezier(.34, 1.4, .5, 1); }
+  .switch-ch.on .big-toggle .knob { transform: translateX(16.6em); }
+  .big-toggle .lbl { position: absolute; left: 1em; top: -2.6em; font: 800 2em/1 var(--font); letter-spacing: -0.03em; }
+
+  /* ---------- chapter: pinned split, picture swaps while you read */
+  .tour { display: grid; grid-template-columns: 1fr 1fr; background: var(--paper); color: var(--ink-dark); }
+  .tour-stage { position: sticky; top: 0; height: 100svh; background: var(--purple); display: grid; place-items: center; padding: 0 var(--m); overflow: hidden; }
+  .tour-stage .window { width: 100%; max-width: 760px; position: relative; aspect-ratio: 1304 / 795; }
+  .tour-stage .window img { position: absolute; inset: 8px; width: calc(100% - 16px); height: calc(100% - 16px); object-fit: cover; opacity: 0; transform: scale(1.04); transition: opacity .6s var(--ease), transform .9s var(--ease); }
+  .tour-stage .window img.show { opacity: 1; transform: none; }
+  .tour-stage figcaption { position: absolute; left: var(--m); bottom: 28px; color: #fff; font-size: var(--s-s); opacity: .85; }
+  .tour-copy { padding: 140px var(--m) 30vh; }
+  .tour-copy h2 { font-size: var(--s-l); max-width: 12ch; }
+  .block { margin-top: 32vh; max-width: 46ch; }
+  .block:first-of-type { margin-top: 64px; }
+  .block h3 { font-size: var(--s-m); font-weight: 800; letter-spacing: -0.025em; line-height: 1.1; }
+  .block p { margin-top: 14px; }
+  .seg { display: inline-flex; flex-wrap: wrap; gap: 4px; margin-top: 22px; padding: 4px; border-radius: 999px; background: rgba(68,34,68,.1); }
+  .seg button { height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: transparent; font: 650 15px/1 var(--font); color: inherit; cursor: pointer; transition: background .25s, color .25s, transform .15s; }
+  .seg button:active { transform: scale(.95); }
+  .seg button[aria-pressed="true"] { background: var(--ink-dark); color: #fff; }
+
+  /* ---------- chapter: games (the live thing) */
+  .games { background: var(--void); padding: 150px var(--m) 160px; }
+  .games-head { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: end; }
+  .games h2 { font-size: var(--s-l); max-width: 13ch; }
+  .games-head p { max-width: 50ch; }
+  .games .seg { background: rgba(255,255,255,.08); margin-top: 40px; flex-wrap: wrap; }
+  .games .seg button[aria-pressed="true"] { background: #fff; color: var(--ink-dark); }
+  .games-body { display: grid; grid-template-columns: 1.15fr .85fr; gap: 28px; margin-top: 28px; align-items: start; }
+  .panel { border-radius: var(--r); background: rgba(255,255,255,.06); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 26px; }
+  .diff-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .diff-head h3 { font-size: var(--s-m); }
+  .diff-file { font-size: var(--s-s); opacity: .75; }
+  .gpu { display: flex; align-items: center; gap: 10px; margin-top: 16px; font-size: var(--s-s); }
+  .gpu .seg { margin: 0; } .gpu .seg button { height: 36px; padding: 0 14px; font-size: 14px; }
+  .rows { margin: 18px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+  .rows li { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; padding: 12px 16px; border-radius: 12px; background: rgba(255,255,255,.05); animation: rowIn .5s var(--ease) both; }
+  .rows li span:last-child { font-weight: 650; white-space: nowrap; }
+  .rows .from { opacity: .55; text-decoration: line-through; margin-right: 8px; font-weight: 500; }
+  .rows .to { color: var(--orchid); }
+  .keep { margin-top: 16px; font-size: var(--s-s); opacity: .8; }
+  @keyframes rowIn { from { opacity: 0; transform: translateY(10px); } }
+  .games-side .window img { aspect-ratio: 1304/795; object-fit: cover; }
+  .games-side p { margin-top: 16px; font-size: var(--s-s); opacity: .8; }
+
+  /* ---------- chapter: four fields */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .step { position: relative; min-height: 84svh; padding: 120px 28px 32px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+  .step:nth-child(1) { background: var(--paper); color: var(--ink-dark); }
+  .step:nth-child(2) { background: var(--orchid); color: var(--ink-dark); }
+  .step:nth-child(3) { background: var(--violet); color: #fff; }
+  .step:nth-child(4) { background: var(--purple); color: #fff; }
+  .step h2 { font-size: var(--s-m); position: absolute; top: 120px; left: 28px; right: 28px; }
+  .step .card { margin-top: 26%; border-radius: 16px; overflow: hidden; background: rgba(255,255,255,.35); padding: 6px; transition: transform .2s var(--ease); }
+  .step:nth-child(n+3) .card { background: rgba(255,255,255,.12); }
+  .step:hover .card { transform: translateY(-6px); }
+  .step .card img { border-radius: 11px; aspect-ratio: 4/3; object-fit: cover; object-position: var(--pos, 50% 0); }
+  .step p { font-size: clamp(19px, 1.6vw, 25px); font-weight: 650; letter-spacing: -0.015em; line-height: 1.2; margin-top: 28px; }
+  .step small { display: block; margin-top: 10px; font-size: var(--s-s); font-weight: 500; letter-spacing: 0; line-height: 1.45; opacity: .85; }
+
+  /* ---------- chapter: questions */
+  .faq { background: var(--paper); color: var(--ink-dark); padding: 160px var(--m); display: grid; grid-template-columns: 4fr 8fr; gap: 40px; }
+  .faq h2 { font-size: var(--s-l); position: sticky; top: 110px; align-self: start; max-width: 8ch; }
+  .faq-list { display: grid; gap: 8px; }
+  details { border-radius: 16px; background: #e8def4; transition: background .3s; }
+  details[open] { background: var(--purple); color: #fff; }
+  summary { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 20px; min-height: 72px; padding: 0 24px; font-size: 19px; font-weight: 650; cursor: pointer; }
+  summary::-webkit-details-marker { display: none; }
+  .pm { position: relative; flex: none; width: 16px; height: 16px; }
+  .pm::before, .pm::after { content: ''; position: absolute; left: 0; top: 6.5px; width: 16px; height: 3px; border-radius: 2px; background: currentColor; transition: transform .3s var(--ease); }
+  .pm::after { transform: rotate(90deg); }
+  details[open] .pm::after { transform: rotate(0); }
+  details p { padding: 0 24px 24px; max-width: 60ch; font-size: 17px; }
+
+  /* ---------- chapter: get it */
+  .cta { background: var(--rose); color: var(--ink-dark); min-height: 90svh; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: end; padding: 140px var(--m) 80px; }
+  .cta h2 { font-size: clamp(56px, 7.5vw, 120px); line-height: .9; letter-spacing: -0.045em; }
+  .cta-copy p { margin-top: 22px; max-width: 42ch; }
+  .dl { align-self: center; justify-self: end; width: min(460px, 100%); border-radius: var(--r); background: rgba(255,255,255,.5); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 28px; box-shadow: 0 30px 80px -30px rgba(0,0,0,.25); }
+  .dl-top { display: flex; gap: 16px; align-items: center; }
+  .dl-top img { width: 64px; height: 64px; border-radius: 16px; }
+  .dl-top b { font-size: 20px; letter-spacing: -0.02em; display: block; }
+  .dl dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 22px 0; font-size: 15px; }
+  .dl dt { opacity: .7; } .dl dd { margin: 0; font-weight: 650; text-align: right; }
+  .dl .btn { width: 100%; justify-content: center; }
+  .dl .alt { display: flex; justify-content: space-between; margin-top: 16px; font-size: 15px; }
+
+  /* ---------- footer of tiles */
+  footer { background: var(--void); padding: 10px; display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px; }
+  .tile { border-radius: 18px; background: #1a1022; padding: 24px; min-height: 220px; display: flex; flex-direction: column; justify-content: space-between; }
+  .t-state { grid-column: span 4; } .t-state p:first-child { font-size: 22px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.25; max-width: 24ch; }
+  .t-state small, .t-time small { font-size: 13px; opacity: .7; }
+  .t-nav { grid-column: span 3; } .t-nav ul, .t-social ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+  .t-nav a, .t-social a { text-decoration: none; } .t-nav a:hover, .t-social a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .t-social { grid-column: span 2; }
+  .t-time { grid-column: span 3; } .t-time b { font-size: 34px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .t-word { grid-column: span 8; min-height: 320px; background: var(--purple); justify-content: center; align-items: center; overflow: hidden; }
+  .t-word span { font-size: 8.6vw; font-weight: 900; letter-spacing: -0.05em; line-height: 1; white-space: nowrap; }
+  .t-ask { grid-column: span 4; min-height: 320px; background: var(--orchid); color: var(--ink-dark); text-decoration: none; transition: background .25s; }
+  .t-ask:hover { background: #e9cdff; }
+  .t-ask p { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+  .t-ask svg { align-self: flex-end; width: 56px; height: 56px; transition: transform .25s var(--ease); }
+  .t-ask:hover svg { transform: translate(4px, -4px); }
+  .tile-label { font-size: var(--s-s); opacity: .7; margin-bottom: 10px; }
+
+  /* ---------- entrances (content stays visible without script) */
+  .js .rise { opacity: 0; transform: translateY(24px); transition: opacity .7s var(--ease), transform .7s var(--ease); transition-delay: calc(var(--i, 0) * 80ms); }
+  .js .rise.in { opacity: 1; transform: none; }
+
+  @media (max-width: 1000px) {
+    .nav ul { display: none; }
+    .nav > .btn { margin-left: auto; }
+    .tour { grid-template-columns: minmax(0, 1fr); }
+    .tour-stage { position: relative; height: auto; padding: 56px var(--m) 72px; }
+    .tour-copy { padding: 72px var(--m) 120px; }
+    .block { margin-top: 72px; }
+    .games-head, .games-body { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .step { min-height: 72svh; }
+    .faq { grid-template-columns: 1fr; padding: 110px var(--m); }
+    .faq h2 { position: static; max-width: none; }
+    .cta { grid-template-columns: 1fr; align-items: start; padding-top: 120px; }
+    .dl { justify-self: stretch; width: 100%; }
+    footer { grid-template-columns: 1fr 1fr; }
+    .t-word, .t-ask { grid-column: span 2; min-height: 180px; }
+    .t-word span { font-size: 15vw; }
+    .t-state, .t-nav, .t-social, .t-time { grid-column: span 1; }
+    .t-state { grid-column: span 2; }
+  }
+  @media (max-width: 620px) {
+    .nav { gap: 12px; } .nav .brand span { display: none; }
+    .headline h1 { font-size: 15vw; }
+    .hero-sub { bottom: 132px; font-size: 16px; }
+    .hero-cta { flex-direction: column; gap: 10px; bottom: 28px; }
+    .hero-cta .link { font-size: 15px; }
+    .hero-shot { padding-bottom: 90px; }
+    .switch-ch .copy { padding-top: 96px; }
+    .switch-ch { padding-bottom: 70vw; }
+    .big-toggle { font-size: 3.6vw; right: auto; left: var(--m); bottom: 8vw; }
+    .steps { grid-template-columns: 1fr; }
+    .step { min-height: 64svh; padding: 96px 20px 28px; }
+    .step h2 { top: 96px; left: 20px; }
+    .step .card { margin-top: 18%; }
+    .games { padding: 110px var(--m) 120px; }
+    .rows li { grid-template-columns: 1fr; gap: 2px; }
+    summary { font-size: 17px; min-height: 64px; padding: 14px 20px; }
+    details p { padding: 0 20px 20px; font-size: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    html { scroll-behavior: auto; }
+    .js .rise { opacity: 1; transform: none; }
+    .hero-shot .window { transform: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav" aria-label="Main">
+  <a class="brand" href="#top"><img src="assets/icon.png" alt="" width="30" height="30"><span>Buddy Optimizer</span></a>
+  <ul>
+    <li><a href="#tour">Features</a></li>
+    <li><a href="#games">Games</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <a class="btn" href="https://github.com/itzBuddyyy/buddy-optimizer/releases/latest">Download</a>
+</nav>
+
+<main>
+  <!-- HERO -->
+  <header class="hero" id="top" data-nav="dark">
+    <div class="hero-top">
+      <div class="headline">
+        <h1><span class="ink-top" style="display:block">More fps.<br>Less lag.</span><span class="ink-bot" aria-hidden="true">More fps.<br>Less lag.</span></h1>
+      </div>
+      <p class="hero-sub">Buddy Optimizer tunes Windows for competitive gaming in one click and sets pro settings for your games. Free, and every change can be undone.</p>
+      <div class="hero-cta">
+        <a class="btn" href="https://github.com/itzBuddyyy/buddy-optimizer/releases/latest">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+          Download for Windows</a>
+        <a class="link" href="https://github.com/itzBuddyyy/buddy-optimizer">See the source</a>
+      </div>
+    </div>
+    <figure class="hero-shot" style="margin:0">
+      <div class="window" id="heroWin"><img src="assets/dashboard.jpg" width="1304" height="795" alt="Buddy Optimizer dashboard with live processor, graphics card, memory, storage and network panels"></div>
+      <figcaption>The dashboard: every component, live, up to twice a second.</figcaption>
+    </figure>
+  </header>
+
+  <!-- ONE CONTROL, BLOWN UP -->
+  <section class="switch-ch" id="switch" data-nav="dark" aria-labelledby="switch-h">
+    <div class="copy">
+      <h2 id="switch-h" class="rise"><span id="switchWord">Stock</span> Windows.</h2>
+      <p class="rise" style="--i:1">Windows ships tuned for office work. Flip the switch and see what Quick Optimize changes in six steps, starting with a System Restore point.</p>
+      <ul class="rise" style="--i:2" aria-live="polite">
+        <li><span>Power plan</span><b data-off="Balanced" data-on="Highest performance">Balanced</b></li>
+        <li><span>Game Mode and GPU priority</span><b data-off="Default" data-on="Games first">Default</b></li>
+        <li><span>Mouse acceleration</span><b data-off="On" data-on="Off, raw input">On</b></li>
+        <li><span>Telemetry and background services</span><b data-off="Running" data-on="Off">Running</b></li>
+        <li><span>Network latency (Nagle)</span><b data-off="Buffered" data-on="Instant">Buffered</b></li>
+      </ul>
+    </div>
+    <div class="big-toggle">
+      <button id="bigSwitch" role="switch" aria-checked="false" aria-label="Optimize Windows"><span class="lbl">Optimize</span><span class="knob"></span></button>
+    </div>
+  </section>
+
+  <!-- PINNED TOUR -->
+  <section class="tour" id="tour" aria-labelledby="tour-h">
+    <figure class="tour-stage" style="margin:0" data-nav="dark">
+      <div class="window">
+        <img data-shot="dashboard" class="show" src="assets/dashboard.jpg" width="1304" height="795" alt="Dashboard with live hardware panels">
+        <img data-shot="optimize" src="assets/optimize.jpg" width="1304" height="795" alt="Optimize screen with Quick Optimize and individual tweaks" loading="lazy">
+        <img data-shot="games" src="assets/games.jpg" width="1304" height="795" alt="Games screen with Call of Duty, Fortnite, Apex Legends and VALORANT cards" loading="lazy">
+        <img data-shot="settings" src="assets/settings.jpg" width="1304" height="795" alt="Settings screen with appearance options" loading="lazy">
+        <img data-shot="lock" src="assets/lock.jpg" width="1320" height="860" alt="Lock screen with clock and password field" loading="lazy">
+      </div>
+      <figcaption id="tourCap">Dashboard</figcaption>
+    </figure>
+    <div class="tour-copy" data-nav="light">
+      <h2 id="tour-h" class="rise">Everything in one window.</h2>
+      <div class="block" data-show="dashboard">
+        <h3 class="rise">See your whole PC, live.</h3>
+        <p class="rise" style="--i:1">Load, clocks, temperatures, fan speed and power for the graphics card; per-thread load for the processor; memory, drives, ping, jitter and packet loss. No administrator rights needed just to watch.</p>
+        <div class="seg rise" style="--i:2" role="group" aria-label="Refresh rate"><button aria-pressed="false">Every 2 s</button><button aria-pressed="true">Every 1 s</button><button aria-pressed="false">Every 0.5 s</button></div>
+      </div>
+      <div class="block" data-show="optimize">
+        <h3 class="rise">Tune Windows in one click.</h3>
+        <p class="rise" style="--i:1">Power plan, gaming tweaks, services, privacy and clean-up, one after another. Or pick single tweaks: debloat, startup apps, timer resolution, GPU profiles. Xbox mode keeps Game Pass working.</p>
+        <div class="seg rise" style="--i:2" role="group" aria-label="Run mode"><button aria-pressed="true">Apply</button><button aria-pressed="false">Preview only</button></div>
+      </div>
+      <div class="block" data-show="games">
+        <h3 class="rise">Pro settings for your games.</h3>
+        <p class="rise" style="--i:1">Call of Duty, Fortnite, Apex Legends and VALORANT, written straight into each game's own settings file. Your resolution, monitor and sensitivity stay yours.</p>
+        <div class="seg rise" style="--i:2" role="group" aria-label="Game"><button aria-pressed="true">COD</button><button aria-pressed="false">Fortnite</button><button aria-pressed="false">Apex</button><button aria-pressed="false">VALORANT</button></div>
+      </div>
+      <div class="block" data-show="settings">
+        <h3 class="rise">Make it yours.</h3>
+        <p class="rise" style="--i:1">Dark or light, how much glass, macOS- or Windows-style window controls, three motion levels, five languages, alerts when the GPU runs hot or ping climbs.</p>
+        <div class="seg rise" style="--i:2" role="group" aria-label="Theme"><button aria-pressed="true">Dark</button><button aria-pressed="false">Light</button><button aria-pressed="false">System</button></div>
+      </div>
+      <div class="block" data-show="lock">
+        <h3 class="rise">Undo anything. Lock everything.</h3>
+        <p class="rise" style="--i:1">Every registry value and service is recorded before it changes, so any session rolls back from Repair. A password lock keeps the app yours on a shared PC.</p>
+        <div class="seg rise" style="--i:2" role="group" aria-label="Auto-lock"><button aria-pressed="false">Never</button><button aria-pressed="true">15 min</button><button aria-pressed="false">30 min</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAMES: the live thing -->
+  <section class="games" id="games" data-nav="dark" aria-labelledby="games-h">
+    <div class="games-head">
+      <h2 id="games-h" class="rise">Your game, tuned for a win.</h2>
+      <p class="rise" style="--i:1">Pick a game and your graphics card to see the exact settings Buddy writes. It only changes keys the game already has, checks each value against what the game allows, and backs the file up first.</p>
+    </div>
+    <div class="seg rise" style="--i:2" role="group" aria-label="Pick a game" id="gamePick">
+      <button aria-pressed="true" data-game="cod">Call of Duty</button>
+      <button aria-pressed="false" data-game="fortnite">Fortnite</button>
+      <button aria-pressed="false" data-game="apex">Apex Legends</button>
+      <button aria-pressed="false" data-game="valorant">VALORANT</button>
+    </div>
+    <div class="games-body">
+      <div class="panel rise" style="--i:3" data-ui>
+        <div class="diff-head"><h3 id="diffTitle">Warzone, Black Ops 7, MW4</h3><span class="diff-file" id="diffFile">s.1.0.cod25.txt0</span></div>
+        <div class="gpu"><span>Graphics card</span>
+          <div class="seg" role="group" aria-label="Graphics card" id="gpuPick"><button aria-pressed="true" data-gpu="nvidia">NVIDIA</button><button aria-pressed="false" data-gpu="amd">AMD</button></div>
+        </div>
+        <ul class="rows" id="diffRows" aria-live="polite"></ul>
+        <p class="keep" id="diffKeep"></p>
+      </div>
+      <figure class="games-side rise" style="--i:4;margin:0">
+        <div class="window"><img src="assets/games.jpg" width="1304" height="795" alt="The Games screen in Buddy Optimizer" loading="lazy"></div>
+        <p>Close the game, press Optimize, play. One click on Restore puts the file back exactly as it was.</p>
+      </figure>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="steps" id="how" aria-label="How it works">
+    <div class="step rise" data-nav="light">
+      <h2>Up and running in a minute.</h2>
+      <div class="card" style="--pos: 50% 40%"><img src="assets/icon.png" width="512" height="512" alt="Buddy Optimizer app icon" loading="lazy" style="aspect-ratio:4/3;object-fit:contain;background:#0b0612"></div>
+      <p>First, install it.<small>Download the installer from GitHub and run it. Windows 10 or 11, 64-bit.</small></p>
+    </div>
+    <div class="step rise" style="--i:1" data-nav="light">
+      <div class="card" style="--pos: 50% 30%"><img src="assets/lock.jpg" width="1320" height="860" alt="Lock screen" loading="lazy"></div>
+      <p>Then unlock it.<small>Enter the password your distributor gave you. Monitoring starts straight away.</small></p>
+    </div>
+    <div class="step rise" style="--i:2" data-nav="dark">
+      <div class="card" style="--pos: 60% 0%"><img src="assets/optimize.jpg" width="1304" height="795" alt="Optimize screen" loading="lazy"></div>
+      <p>Next, optimize.<small>Windows asks once for administrator rights. Quick Optimize starts with a restore point.</small></p>
+    </div>
+    <div class="step rise" style="--i:3" data-nav="dark">
+      <div class="card" style="--pos: 40% 0%"><img src="assets/games.jpg" width="1304" height="795" alt="Games screen" loading="lazy"></div>
+      <p>Last, restart and play.<small>Tune your games too. Updates install themselves from then on.</small></p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq" id="faq" data-nav="light" aria-labelledby="faq-h">
+    <h2 id="faq-h" class="rise">Good questions.</h2>
+    <div class="faq-list">
+      <details name="faq" open class="rise"><summary>Is it free?<span class="pm" aria-hidden="true"></span></summary><p>Yes. Buddy Optimizer is free and open source under the MIT license. The full source is on GitHub.</p></details>
+      <details name="faq" class="rise"><summary>Can it get me banned?<span class="pm" aria-hidden="true"></span></summary><p>Buddy never touches game files or game memory. It only edits the settings files the games write themselves, the same ones the in-game menu saves, and it does not install the kernel driver some anti-cheats block.</p></details>
+      <details name="faq" class="rise"><summary>Can I undo the changes?<span class="pm" aria-hidden="true"></span></summary><p>Yes. Every registry value, service and command is recorded before it changes, and any session rolls back from Optimize, Repair. Quick Optimize also creates a System Restore point first, and each game has its own Restore button.</p></details>
+      <details name="faq" class="rise"><summary>Why does Windows ask for administrator rights?<span class="pm" aria-hidden="true"></span></summary><p>Monitoring runs without them. Changing system settings needs them, so Windows asks once per session, the first time you optimize something.</p></details>
+      <details name="faq" class="rise"><summary>Windows says "Windows protected your PC". Is that normal?<span class="pm" aria-hidden="true"></span></summary><p>Yes. The installer is not code-signed yet, so SmartScreen warns about it. Click More info, then Run anyway.</p></details>
+      <details name="faq" class="rise"><summary>Which games are supported?<span class="pm" aria-hidden="true"></span></summary><p>Call of Duty (Warzone, Black Ops 7 and Modern Warfare 4), Fortnite, Apex Legends and VALORANT. The Windows tweaks help every game.</p></details>
+      <details name="faq" class="rise"><summary>Why is there no CPU temperature?<span class="pm" aria-hidden="true"></span></summary><p>Reading it needs a kernel driver that some anti-cheats, such as FACEIT, block. Buddy leaves it out on purpose; graphics card temperatures are shown.</p></details>
+      <details name="faq" class="rise"><summary>Does it update itself?<span class="pm" aria-hidden="true"></span></summary><p>Yes, from version 1.1.1 on. When an update has downloaded, the app shows a banner and a Windows notification with a one-click restart.</p></details>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta" id="get" data-nav="light" aria-labelledby="get-h">
+    <div class="cta-copy">
+      <h2 id="get-h" class="rise">Get Buddy.<br>Play better.</h2>
+      <p class="rise" style="--i:1">The download is the installer from the latest GitHub release. Run it, unlock the app, and start with Quick Optimize.</p>
+    </div>
+    <div class="dl rise" style="--i:2" data-ui>
+      <div class="dl-top"><img src="assets/icon.png" width="64" height="64" alt=""><div><b>Buddy Optimizer</b><span id="ver">Latest release</span></div></div>
+      <dl>
+        <dt>System</dt><dd>Windows 10 / 11, 64-bit</dd>
+        <dt>Download</dt><dd id="size">About 136 MB</dd>
+        <dt>License</dt><dd>MIT, free</dd>
+      </dl>
+      <a class="btn dark" id="dlBtn" href="https://github.com/itzBuddyyy/buddy-optimizer/releases/latest">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+        Download for Windows</a>
+      <div class="alt"><a class="link" href="https://github.com/itzBuddyyy/buddy-optimizer/releases">All releases</a><a class="link" href="https://github.com/itzBuddyyy/buddy-optimizer">Source code</a></div>
+    </div>
+  </section>
+</main>
+
+<footer data-nav="dark">
+  <div class="tile t-state rise">
+    <p>Made by itzBuddy for players who want every frame.</p>
+    <small>© 2026 itzBuddy · MIT license · Not affiliated with Activision, Epic Games, Electronic Arts or Riot Games.</small>
+  </div>
+  <div class="tile t-nav rise" style="--i:1"><div class="tile-label">Buddy Optimizer</div>
+    <ul><li><a href="#tour">Features</a></li><li><a href="#games">Games</a></li><li><a href="#how">How it works</a></li><li><a href="#faq">FAQ</a></li><li><a href="https://github.com/itzBuddyyy/buddy-optimizer">GitHub</a></li></ul>
+  </div>
+  <div class="tile t-social rise" style="--i:2"><div class="tile-label">Follow</div>
+    <ul>
+      <li><a href="https://www.instagram.com/itzbuddyy_" rel="me">Instagram</a></li>
+      <li><a href="https://www.tiktok.com/@itzbuddyy_" rel="me">TikTok</a></li>
+      <li><a href="https://x.com/itzbuddytv" rel="me">X</a></li>
+      <li><a href="https://www.twitch.tv/itzbuddytv" rel="me">Twitch</a></li>
+      <li><a href="https://beacons.ai/itzbuddy" rel="me">All links</a></li>
+    </ul>
+  </div>
+  <div class="tile t-time rise" style="--i:3"><div class="tile-label">Your PC's time</div><b id="clock">--:--</b><small>Built in Italy · Windows only</small></div>
+  <div class="tile t-word" aria-hidden="true"><span>Buddy Optimizer</span></div>
+  <a class="tile t-ask" href="https://docs.google.com/forms/d/e/1FAIpQLScflAUtBtFT0YAb4ZV8Qgbsof2tyX0aoYFFccm4FETkgHmYDg/viewform">
+    <p>Want an AI project?<br>Ask itzBuddy.</p>
+    <svg viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 42 42 14M20 14h22v22"/></svg>
+  </a>
+</footer>
+
+<script>
+document.documentElement.classList.add('js')
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+
+// entrances: each part of a section rises once as it enters
+const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) } }), { rootMargin: '0px 0px -8% 0px' })
+document.querySelectorAll('.rise').forEach((el) => io.observe(el))
+
+// glass header takes the ink of the chapter under it
+const nav = document.querySelector('.nav')
+function navInk() {
+  const y = nav.getBoundingClientRect().bottom - 30
+  const el = document.elementsFromPoint(innerWidth / 2, y).map((n) => n.closest('[data-nav]')).find(Boolean)
+  nav.classList.toggle('light', el?.dataset.nav === 'light')
+}
+
+// hero screenshot rises and settles as you scroll
+const heroWin = document.getElementById('heroWin')
+function heroMove() {
+  if (reduce) return
+  const r = heroWin.getBoundingClientRect()
+  const t = Math.min(1, Math.max(0, 1 - (r.top - innerHeight * .15) / (innerHeight * .85)))
+  heroWin.style.transform = `perspective(1400px) rotateX(${(1 - t) * 18}deg) scale(${.86 + t * .14}) translateY(${(1 - t) * 40}px)`
+}
+let ticking = false
+addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { navInk(); heroMove(); ticking = false }) } }, { passive: true })
+addEventListener('resize', () => { navInk(); heroMove() })
+navInk(); heroMove()
+
+// segmented controls
+document.querySelectorAll('.seg').forEach((seg) => seg.addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return
+  seg.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
+}))
+
+// the big switch
+const sw = document.getElementById('bigSwitch'), swCh = document.getElementById('switch')
+sw.addEventListener('click', () => {
+  const on = sw.getAttribute('aria-checked') !== 'true'
+  sw.setAttribute('aria-checked', String(on))
+  swCh.classList.toggle('on', on)
+  swCh.dataset.nav = on ? 'light' : 'dark'
+  document.getElementById('switchWord').textContent = on ? 'Tuned' : 'Stock'
+  swCh.querySelectorAll('li b').forEach((b) => (b.textContent = on ? b.dataset.on : b.dataset.off))
+  navInk()
+})
+
+// pinned tour: the picture follows the block you are reading
+const shots = document.querySelectorAll('.tour-stage img'), cap = document.getElementById('tourCap')
+const names = { dashboard: 'Dashboard', optimize: 'Optimize', games: 'Games', settings: 'Settings', lock: 'Lock screen' }
+const showShot = (id) => { shots.forEach((s) => s.classList.toggle('show', s.dataset.shot === id)); cap.textContent = names[id] }
+const tio = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) showShot(e.target.dataset.show) }), { rootMargin: '-45% 0px -45% 0px' })
+document.querySelectorAll('.block').forEach((b) => { tio.observe(b); b.addEventListener('click', () => showShot(b.dataset.show)) })
+
+// games: the real settings each profile writes (from engine/files/games and Games.ps1)
+const GAMES = {
+  cod: { title: 'Warzone, Black Ops 7, MW4', file: 's.1.0.cod25.txt0 · s.1.1.bt.cod26.txt', rows: [
+      ['Shadows', 'Very High', 'Very Low'], ['Depth of field and motion blur', 'On', 'Off'], ['Particles', 'High', 'Very low'],
+      ['V-Sync', '100%', 'Disabled'], ['Frame cap', '165 fps', 'Uncapped'], ['Display mode', 'Borderless', 'Fullscreen'],
+      ['Blood, shell casings, corpses', 'Shown', 'Hidden'], ['Renderer threads', 'Auto', 'Your cores − 1'], ['Config cloud sync', 'On', 'Off']],
+    nvidia: [['NVIDIA Reflex', 'Off', 'On'], ['Upscaling (MW4)', 'Native', 'DLSS'], ['Frame generation', 'On', 'Off']],
+    amd: [['AMD Anti-Lag 2', 'Off', 'On'], ['Anti-aliasing', 'FSR AA', 'SMAA + CAS'], ['Frame generation', 'On', 'Off']],
+    keep: 'Kept as they are: resolution, monitor, refresh rate, audio devices, sensitivity and key binds.' },
+  fortnite: { title: 'Fortnite', file: 'GameUserSettings.ini', rows: [
+      ['Rendering mode', 'DirectX 12', 'Performance'], ['3D resolution', '75%', '100%'], ['View distance', 'Epic', 'Near'],
+      ['Shadows, effects, post-processing', 'Epic', 'Low'], ['Grass', 'On', 'Off'], ['Motion blur', 'On', 'Off'],
+      ['V-Sync', 'On', 'Off'], ['Frame rate limit', '144 fps', 'Unlimited'], ['Window mode', 'Borderless', 'Fullscreen']],
+    nvidia: [['Low Latency Mode', 'Off', 'Set in-game: On + Boost']], amd: [['Mouse acceleration', 'On', 'Off']],
+    keep: 'Kept as they are: resolution, sensitivity, key binds and audio.' },
+  apex: { title: 'Apex Legends', file: 'videoconfig.txt', rows: [
+      ['V-Sync', 'On', 'Off'], ['Adaptive resolution FPS target', 'On', 'Off'], ['Sun shadows', 'On', 'Off'], ['Spot shadows', 'On', 'Off'],
+      ['Ambient occlusion', 'On', 'Off'], ['Volumetric lighting', 'On', 'Off'], ['Depth of field when aiming', 'On', 'Off'],
+      ['Ragdolls and gibs', 'On', 'Off'], ['Impact marks', 'On', 'Off'], ['Display mode', 'Borderless', 'Fullscreen']],
+    nvidia: [['Launch option', '144 fps cap', '+fps_max 0']], amd: [['Launch option', '144 fps cap', '+fps_max 0']],
+    keep: 'Kept as they are: resolution, field of view, texture budget and anti-aliasing. The file can be locked so Apex keeps the values.' },
+  valorant: { title: 'VALORANT', file: 'GameUserSettings.ini · every account', rows: [
+      ['Material and texture detail', 'High', 'Low'], ['Shadows', 'High', 'Low'], ['Effects and post-processing', 'High', 'Low'],
+      ['Foliage and view distance', 'High', 'Low'], ['V-Sync', 'On', 'Off'], ['Dynamic resolution', 'On', 'Off'], ['Window mode', 'Borderless', 'Fullscreen']],
+    nvidia: [['NVIDIA Reflex', 'Off', 'Set in-game: On + Boost']], amd: [['Anti-Lag', 'Off', 'Set in Adrenalin: On']],
+    keep: 'Kept as they are: anti-aliasing (MSAA keeps heads easy to read), resolution, crosshair and sensitivity.' }
+}
+let game = 'cod', gpu = 'nvidia'
+const rowsEl = document.getElementById('diffRows')
+function renderGame() {
+  const g = GAMES[game]
+  document.getElementById('diffTitle').textContent = g.title
+  document.getElementById('diffFile').textContent = g.file
+  document.getElementById('diffKeep').textContent = g.keep
+  rowsEl.replaceChildren(...[...g.rows, ...g[gpu]].map(([k, from, to], i) => {
+    const li = document.createElement('li'); li.style.animationDelay = (reduce ? 0 : i * 40) + 'ms'
+    const a = document.createElement('span'); a.textContent = k
+    const b = document.createElement('span')
+    const f = document.createElement('span'); f.className = 'from'; f.textContent = from
+    const t = document.createElement('span'); t.className = 'to'; t.textContent = to
+    b.append(f, t); li.append(a, b); return li
+  }))
+}
+document.getElementById('gamePick').addEventListener('click', (e) => { const b = e.target.closest('[data-game]'); if (b) { game = b.dataset.game; renderGame() } })
+document.getElementById('gpuPick').addEventListener('click', (e) => { const b = e.target.closest('[data-gpu]'); if (b) { gpu = b.dataset.gpu; renderGame() } })
+renderGame()
+
+// footer clock
+const clock = document.getElementById('clock')
+const tick = () => (clock.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+tick(); setInterval(tick, 15000)
+
+// latest version and size straight from GitHub (falls back to the static text)
+fetch('https://api.github.com/repos/itzBuddyyy/buddy-optimizer/releases/latest').then((r) => r.ok ? r.json() : null).then((rel) => {
+  if (!rel) return
+  const exe = rel.assets?.find((a) => a.name.endsWith('.exe'))
+  document.getElementById('ver').textContent = 'Version ' + rel.tag_name.replace(/^v/, '')
+  if (exe) {
+    document.getElementById('size').textContent = Math.round(exe.size / 1e6) + ' MB'
+    document.getElementById('dlBtn').href = exe.browser_download_url
+  }
+}).catch(() => {})
+</script>
+</body>
+</html>
