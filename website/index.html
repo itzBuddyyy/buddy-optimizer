@@ -5,423 +5,465 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Buddy Optimizer: one-click PC tuning for competitive gaming</title>
 <meta name="description" content="Free Windows app that tunes your gaming PC in one click, shows live hardware data, and sets competitive settings for Call of Duty, Fortnite, Apex Legends and VALORANT. Every change can be undone.">
-<meta name="theme-color" content="#0b0612">
+<meta name="theme-color" content="#07030c">
+<meta name="color-scheme" content="dark">
 <link rel="icon" href="assets/icon.png">
 <meta property="og:title" content="Buddy Optimizer">
 <meta property="og:description" content="One click. More FPS, less lag. Free for Windows 10 and 11.">
-<meta property="og:image" content="assets/dashboard.jpg">
+<meta property="og:image" content="https://itzbuddyyy.github.io/buddy-optimizer/assets/dashboard.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,650;14..32,800;14..32,900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --void: #0b0612;      /* app window ground */
-    --purple: #442244;    /* Purple Void */
-    --violet: #6f42e8;    /* app accent */
-    --paper: #f4eefb;
+    --bg: #07030c;
+    --void: #0b0612;
+    --purple: #442244;   /* Purple Void */
+    --violet: #7c4dff;
     --orchid: #dcb4ff;
-    --rose: #f2a3dd;      /* call-to-action field */
-    --deep: #1b0a20;
-    --ink-dark: #160a1c;
-    --ink-light: #ffffff;
+    --rose: #ef8fd8;
+    --text: #fff;
+    --text-2: rgba(255,255,255,.78);
     --font: 'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
-    --m: clamp(20px, 3vw, 40px);          /* the page's one pair of outer margins */
-    --r: 22px;                             /* the one radius (app windows / glass) */
-    --s-xl: clamp(64px, 9.5vw, 150px);
-    --s-l: clamp(36px, 4.6vw, 68px);
-    --s-m: clamp(22px, 2.2vw, 32px);
-    --s-b: clamp(16px, 1.2vw, 19px);
+    --m: clamp(20px, 3vw, 40px);
+    --r: 26px;
+    --s-xl: clamp(54px, 8.6vw, 138px);
+    --s-l: clamp(36px, 4.4vw, 66px);
+    --s-m: clamp(22px, 2vw, 30px);
+    --s-b: clamp(16px, 1.15vw, 18px);
     --s-s: 14px;
     --ease: cubic-bezier(.22, 1, .36, 1);
+    --spring: linear(0, .009, .035 2.1%, .141, .281 6.7%, .723 12.9%, .938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, .991, .977 51%, .974 53.8%, .975 57.1%, .997 69.8%, 1.003 76.9%, 1.004 83.8%, 1);
+    /* liquid glass */
+    --glass-bg: rgba(255,255,255,.07);
+    --glass-blur: blur(28px) saturate(1.8);
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body { margin: 0; background: var(--void); color: var(--ink-light); font-family: var(--font); font-size: var(--s-b); line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: clip; }
+  html { scroll-behavior: smooth; background: var(--bg); }
+  body { margin: 0; color: var(--text); font-family: var(--font); font-size: var(--s-b); line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: clip; }
   img { display: block; max-width: 100%; height: auto; }
   a { color: inherit; }
-  h1, h2, h3 { margin: 0; font-weight: 800; letter-spacing: -0.035em; line-height: .95; }
+  h1, h2, h3 { margin: 0; font-weight: 800; letter-spacing: -0.035em; line-height: 1; }
   p { margin: 0; }
-  :focus-visible { outline: 3px solid var(--orchid); outline-offset: 3px; border-radius: 6px; }
-  ::selection { background: var(--orchid); color: var(--ink-dark); }
-  .wrap { padding-inline: var(--m); }
+  :focus-visible { outline: 3px solid var(--orchid); outline-offset: 3px; border-radius: 8px; }
+  ::selection { background: var(--violet); color: #fff; }
 
-  /* ---------- buttons: one shape, fully round, flat fill */
-  .btn { display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 26px; border-radius: 999px; border: 0; font: 650 16px/1 var(--font); text-decoration: none; cursor: pointer; background: var(--ink-light); color: var(--ink-dark); transition: transform .2s var(--ease), background .2s; }
-  .btn:hover { transform: translateY(-2px); }
+  /* ---------- the colour field behind the glass (slowly drifting light) */
+  .aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: var(--bg); }
+  .aurora i { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .55; will-change: transform; }
+  .aurora i:nth-child(1) { width: 60vw; height: 60vw; left: -18vw; top: -22vw; background: #5b2bd6; animation: drift1 38s ease-in-out infinite alternate; }
+  .aurora i:nth-child(2) { width: 50vw; height: 50vw; right: -16vw; top: 18vh; background: #8a2f7a; animation: drift2 44s ease-in-out infinite alternate; }
+  .aurora i:nth-child(3) { width: 46vw; height: 46vw; left: 22vw; bottom: -26vw; background: #442244; opacity: .9; animation: drift3 50s ease-in-out infinite alternate; }
+  .aurora i:nth-child(4) { width: 26vw; height: 26vw; left: 52vw; top: 46vh; background: #c25cc0; opacity: .28; animation: drift1 31s ease-in-out infinite alternate-reverse; }
+  @keyframes drift1 { to { transform: translate(18vw, 14vh) scale(1.15); } }
+  @keyframes drift2 { to { transform: translate(-22vw, 20vh) scale(.9); } }
+  @keyframes drift3 { to { transform: translate(-10vw, -22vh) scale(1.2); } }
+  .grain { position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .07; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  /* ---------- liquid glass surface: blur, bright rim, specular top light, pointer sheen */
+  .glass { position: relative; background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-radius: var(--r);
+           box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(255,255,255,.06), inset 0 0 0 1px rgba(255,255,255,.1), 0 20px 60px -24px rgba(0,0,0,.65); isolation: isolate; }
+  .glass::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1;
+           background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,0) 38%); }
+  .glass::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .35s;
+           background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), rgba(255,255,255,.16), transparent 60%); }
+  .glass:hover::after { opacity: 1; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 52px; padding: 0 26px; border-radius: 999px; border: 0; font: 650 16px/1 var(--font); text-decoration: none; cursor: pointer; color: #160a1c; background: #fff; transition: transform .25s var(--spring), box-shadow .25s; }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px -12px rgba(0,0,0,.6); }
   .btn:active { transform: scale(.96); }
-  .btn.dark { background: var(--ink-dark); color: #fff; }
+  .btn.ghost { background: rgba(255,255,255,.08); color: #fff; backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), inset 0 0 0 1px rgba(255,255,255,.14); }
   .btn svg { width: 18px; height: 18px; }
-  .link { font-weight: 650; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; }
-  .link:hover { text-decoration-thickness: 3px; }
 
-  /* ---------- glass header (Apple-style, requested by the client) */
-  .nav { position: fixed; inset: 14px var(--m) auto; z-index: 40; display: flex; align-items: center; gap: 24px; height: 60px; padding: 0 10px 0 16px; border-radius: 999px;
-         background: rgba(255,255,255,.08); backdrop-filter: blur(24px) saturate(1.6); -webkit-backdrop-filter: blur(24px) saturate(1.6); color: var(--nav-ink, #fff); transition: color .3s, background .3s; }
-  .nav.light { --nav-ink: var(--ink-dark); background: rgba(255,255,255,.55); }
+  /* ---------- glass navigation */
+  .nav { position: fixed; inset: 14px var(--m) auto; z-index: 40; display: flex; align-items: center; gap: 24px; height: 62px; padding: 0 10px 0 16px; border-radius: 999px; }
   .nav .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -0.02em; text-decoration: none; font-size: 17px; }
-  .nav .brand img { width: 30px; height: 30px; border-radius: 8px; }
-  .nav ul { display: flex; gap: 22px; margin: 0 0 0 auto; padding: 0; list-style: none; font-size: 15px; font-weight: 500; }
-  .nav ul a { text-decoration: none; opacity: .85; } .nav ul a:hover { opacity: 1; }
+  .nav .brand img { width: 32px; height: 32px; border-radius: 9px; }
+  .nav ul { display: flex; gap: 24px; margin: 0 0 0 auto; padding: 0; list-style: none; font-size: 15px; font-weight: 500; }
+  .nav ul a { text-decoration: none; color: var(--text-2); transition: color .2s; } .nav ul a:hover { color: #fff; }
   .nav .btn { height: 42px; padding: 0 20px; font-size: 15px; }
-  .nav.light .btn { background: var(--ink-dark); color: #fff; }
 
-  /* ---------- hero: headline across two fields */
-  .hero { position: relative; background: var(--purple); }
-  .hero-top { height: 100svh; position: relative; background: linear-gradient(var(--void) 50%, var(--purple) 50%); /* two flat fields meeting at a hard seam, not a fade */ }
-  .headline { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-62%); text-align: center; pointer-events: none; }
-  .headline h1 { font-size: var(--s-xl); font-weight: 900; line-height: .86; letter-spacing: -0.045em; text-transform: uppercase; }
-  .headline .ink-top { color: var(--orchid); clip-path: inset(0 0 calc(38% ) 0); }
-  .headline .ink-bot { position: absolute; inset: 0; color: var(--deep); clip-path: inset(calc(62%) 0 0 0); }
-  .hero-sub { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%); width: min(620px, calc(100% - 2*var(--m))); text-align: center; font-size: clamp(17px, 1.5vw, 21px); }
-  .hero-cta { position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); display: flex; gap: 14px; align-items: center; white-space: nowrap; }
-  .hero-shot { padding: 0 var(--m) 140px; }
-  .window { border-radius: var(--r); overflow: hidden; background: rgba(255,255,255,.06); padding: 8px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
-  .window img { border-radius: calc(var(--r) - 8px); width: 100%; }
-  .hero-shot .window { max-width: 1240px; margin: 0 auto; transform-origin: 50% 0; will-change: transform; }
-  .hero-shot figcaption { text-align: center; margin-top: 18px; font-size: var(--s-s); opacity: .8; }
+  /* ---------- hero */
+  .hero { padding: 168px var(--m) 60px; text-align: center; overflow-x: clip; }
+  .hero h1 { font-size: var(--s-xl); font-weight: 900; line-height: .92; letter-spacing: -0.045em; text-transform: uppercase; }
+  .hero h1 .l1 { display: block; color: var(--orchid); }
+  .hero h1 .l2 { display: block; }
+  .hero-sub { margin: 32px auto 0; max-width: 620px; font-size: clamp(17px, 1.45vw, 21px); color: var(--text-2); }
+  .hero-cta { margin-top: 34px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
-  /* ---------- chapter: one control, blown up */
-  .switch-ch { position: relative; min-height: 92svh; overflow: hidden; background: var(--violet); color: #fff; transition: background .45s var(--ease), color .45s var(--ease); }
-  .switch-ch.on { background: var(--paper); color: var(--ink-dark); }
-  .switch-ch .copy { position: relative; z-index: 2; padding: 120px var(--m) 0; max-width: 720px; }
-  .switch-ch h2 { font-size: var(--s-l); }
-  .switch-ch .copy p { margin-top: 18px; max-width: 46ch; }
-  .switch-ch ul { margin: 28px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; max-width: 520px; }
-  .switch-ch li { display: flex; justify-content: space-between; gap: 16px; padding: 14px 18px; border-radius: 14px; background: rgba(255,255,255,.12); font-weight: 500; }
-  .switch-ch.on li { background: rgba(68,34,68,.08); }
-  .switch-ch li b { font-weight: 800; }
-  .big-toggle { position: absolute; right: -5vw; bottom: 9vh; z-index: 1; font-size: clamp(10px, 1.75vw, 28px); }
-  .big-toggle button { display: flex; align-items: center; gap: 1em; width: 30em; height: 13em; padding: 1.2em; border: 0; border-radius: 999px; background: rgba(0,0,0,.22); cursor: pointer; transition: background .45s var(--ease); }
-  .switch-ch.on .big-toggle button { background: var(--purple); }
-  .big-toggle .knob { width: 10.6em; height: 10.6em; border-radius: 50%; background: #fff; transform: translateX(0); transition: transform .6s cubic-bezier(.34, 1.4, .5, 1); }
-  .switch-ch.on .big-toggle .knob { transform: translateX(16.6em); }
-  .big-toggle .lbl { position: absolute; left: 1em; top: -2.6em; font: 800 2em/1 var(--font); letter-spacing: -0.03em; }
+  /* 3D stack of real app windows: fans out on scroll, tilts with the pointer */
+  .stage3d { position: relative; height: clamp(360px, 52vw, 760px); margin-top: 70px; perspective: 1800px; }
+  .stack { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .6s var(--ease); }
+  .win { position: absolute; left: 50%; top: 0; width: min(1000px, 78vw); padding: 8px; border-radius: var(--r); transform-style: preserve-3d; will-change: transform; cursor: pointer; transition: transform .8s var(--ease); }
+  .win img { border-radius: calc(var(--r) - 8px); width: 100%; aspect-ratio: 1304 / 795; object-fit: cover; }
+  .win figcaption { position: absolute; left: 22px; bottom: -36px; font-size: var(--s-s); color: var(--text-2); opacity: 0; transition: opacity .4s; }
+  .win.front figcaption { opacity: 1; }
 
-  /* ---------- chapter: pinned split, picture swaps while you read */
-  .tour { display: grid; grid-template-columns: 1fr 1fr; background: var(--paper); color: var(--ink-dark); }
-  .tour-stage { position: sticky; top: 0; height: 100svh; background: var(--purple); display: grid; place-items: center; padding: 0 var(--m); overflow: hidden; }
-  .tour-stage .window { width: 100%; max-width: 760px; position: relative; aspect-ratio: 1304 / 795; }
-  .tour-stage .window img { position: absolute; inset: 8px; width: calc(100% - 16px); height: calc(100% - 16px); object-fit: cover; opacity: 0; transform: scale(1.04); transition: opacity .6s var(--ease), transform .9s var(--ease); }
-  .tour-stage .window img.show { opacity: 1; transform: none; }
-  .tour-stage figcaption { position: absolute; left: var(--m); bottom: 28px; color: #fff; font-size: var(--s-s); opacity: .85; }
-  .tour-copy { padding: 140px var(--m) 30vh; }
-  .tour-copy h2 { font-size: var(--s-l); max-width: 12ch; }
-  .block { margin-top: 32vh; max-width: 46ch; }
-  .block:first-of-type { margin-top: 64px; }
-  .block h3 { font-size: var(--s-m); font-weight: 800; letter-spacing: -0.025em; line-height: 1.1; }
-  .block p { margin-top: 14px; }
-  .seg { display: inline-flex; flex-wrap: wrap; gap: 4px; margin-top: 22px; padding: 4px; border-radius: 999px; background: rgba(68,34,68,.1); }
-  .seg button { height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: transparent; font: 650 15px/1 var(--font); color: inherit; cursor: pointer; transition: background .25s, color .25s, transform .15s; }
-  .seg button:active { transform: scale(.95); }
-  .seg button[aria-pressed="true"] { background: var(--ink-dark); color: #fff; }
+  section { position: relative; }
+  .h2 { font-size: var(--s-l); }
 
-  /* ---------- chapter: games (the live thing) */
-  .games { background: var(--void); padding: 150px var(--m) 160px; }
+  /* ---------- Optimize chapter: glass switch + 3D gauge */
+  .opt { padding: 160px var(--m); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: center; }
+  .opt-card { padding: clamp(28px, 3vw, 44px); }
+  .opt h2 .word { display: inline-block; transition: opacity .35s, transform .5s var(--spring), filter .35s; }
+  .opt h2 .word.swap { opacity: 0; transform: translateY(-.4em); filter: blur(8px); }
+  .opt-card > p { margin-top: 16px; max-width: 46ch; color: var(--text-2); }
+  .opt-list { margin: 28px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .opt-list li { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 16px 14px 18px; border-radius: 16px; background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.07); transition: background .5s, box-shadow .5s; overflow: hidden; }
+  .opt-list li.done { background: rgba(124,77,255,.18); box-shadow: inset 0 0 0 1px rgba(220,180,255,.35); }
+  .opt-list .val { position: relative; height: 1.5em; overflow: hidden; text-align: right; font-weight: 800; min-width: 10ch; }
+  .opt-list .val span { display: block; transition: transform .55s var(--spring), opacity .4s; }
+  .opt-list .val .new { position: absolute; right: 0; top: 0; transform: translateY(110%); opacity: 0; color: var(--orchid); }
+  .opt-list li.done .val .old { transform: translateY(-110%); opacity: 0; }
+  .opt-list li.done .val .new { transform: none; opacity: 1; }
+  .opt-list .tick { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--orchid); transform: scaleY(0); transition: transform .5s var(--spring); }
+  .opt-list li.done .tick { transform: none; }
+  .opt-side { display: grid; justify-items: center; gap: 28px; }
+  .gauge3d { width: min(520px, 100%); aspect-ratio: 1; position: relative; cursor: grab; touch-action: pan-y; }
+  .gauge3d:active { cursor: grabbing; }
+  .gauge3d canvas { width: 100% !important; height: 100% !important; display: block; }
+  .gauge3d .fallback { position: absolute; inset: 18%; border-radius: 28%; }
+  .gauge3d .readout { position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); font-weight: 650; font-size: 15px; color: var(--text-2); white-space: nowrap; }
+  .gauge3d .readout b { color: #fff; font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .hint { font-size: var(--s-s); color: var(--text-2); text-align: center; }
+
+  /* the switch itself: a liquid-glass track with a springy knob */
+  .gswitch { --w: 260px; display: flex; align-items: center; gap: 18px; background: none; border: 0; padding: 0; cursor: pointer; color: #fff; font: 800 22px/1 var(--font); letter-spacing: -0.02em; }
+  .gswitch .track { position: relative; width: var(--w); height: 104px; border-radius: 999px; padding: 10px; background: rgba(255,255,255,.08); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+       box-shadow: inset 0 1px 0 rgba(255,255,255,.4), inset 0 0 0 1px rgba(255,255,255,.14), inset 0 -10px 24px rgba(0,0,0,.25); overflow: hidden; transition: box-shadow .5s; }
+  .gswitch .fill { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(110deg, #6f42e8, #c25cc0 60%, #ef8fd8); opacity: 0; transform: scaleX(.2); transform-origin: left; transition: opacity .5s, transform .7s var(--spring); }
+  .gswitch .knob { position: relative; display: block; width: 84px; height: 84px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #e9dcff 60%, #cdb6f5); box-shadow: 0 8px 20px -6px rgba(0,0,0,.5), inset 0 -4px 8px rgba(120,80,200,.25); transition: transform .8s var(--spring), width .25s var(--ease); }
+  .gswitch:active .knob { width: 100px; }
+  .gswitch[aria-checked="true"] .fill { opacity: 1; transform: none; }
+  .gswitch[aria-checked="true"] .knob { transform: translateX(calc(var(--w) - 104px)); }
+  .gswitch[aria-checked="true"]:active .knob { transform: translateX(calc(var(--w) - 120px)); }
+  .gswitch[aria-checked="true"] .track { box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 0 0 1px rgba(255,255,255,.2), 0 0 60px -6px rgba(194,92,192,.7); }
+
+  /* ---------- tour: sticky glass window, glass cards you can click */
+  .tour { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 40px; padding: 120px var(--m) 140px; }
+  .tour-stage { position: sticky; top: 96px; height: calc(100svh - 130px); display: grid; align-content: center; perspective: 1400px; }
+  .tour-win { position: relative; padding: 8px; border-radius: var(--r); transform-style: preserve-3d; transition: transform .5s var(--ease); }
+  .tour-win .screens { position: relative; aspect-ratio: 1304 / 795; border-radius: calc(var(--r) - 8px); overflow: hidden; }
+  .tour-win img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06); filter: blur(6px); transition: opacity .6s var(--ease), transform .9s var(--ease), filter .6s; }
+  .tour-win img.show { opacity: 1; transform: none; filter: none; }
+  .tour-cap { margin-top: 18px; color: var(--text-2); font-size: var(--s-s); }
+  .tour-copy h2 { max-width: 12ch; }
+  .tour-copy > p { margin-top: 16px; color: var(--text-2); }
+  .card { display: block; width: 100%; text-align: left; color: inherit; font: inherit; border: 0; margin-top: 18px; padding: 26px; cursor: pointer; transition: transform .45s var(--spring), background .4s; }
+  .card:first-of-type { margin-top: 40px; }
+  .card h3 { font-size: var(--s-m); letter-spacing: -0.025em; line-height: 1.12; }
+  .card p { margin-top: 10px; color: var(--text-2); }
+  .card[aria-current="true"] { background: rgba(124,77,255,.2); transform: translateX(-6px); }
+  .card:hover { transform: translateX(-6px); }
+  .card .shot-sm { display: none; }
+
+  /* ---------- games: the live thing */
+  .games { padding: 140px var(--m); }
   .games-head { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: end; }
-  .games h2 { font-size: var(--s-l); max-width: 13ch; }
-  .games-head p { max-width: 50ch; }
-  .games .seg { background: rgba(255,255,255,.08); margin-top: 40px; flex-wrap: wrap; }
-  .games .seg button[aria-pressed="true"] { background: #fff; color: var(--ink-dark); }
-  .games-body { display: grid; grid-template-columns: 1.15fr .85fr; gap: 28px; margin-top: 28px; align-items: start; }
-  .panel { border-radius: var(--r); background: rgba(255,255,255,.06); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 26px; }
+  .games-head p { max-width: 50ch; color: var(--text-2); }
+  .seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 5px; border-radius: 999px; }
+  .seg button { height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: transparent; font: 650 15px/1 var(--font); color: var(--text-2); cursor: pointer; transition: background .3s, color .3s, transform .2s var(--spring); }
+  .seg button:hover { color: #fff; }
+  .seg button:active { transform: scale(.94); }
+  .seg button[aria-pressed="true"] { background: #fff; color: #160a1c; }
+  #gamePick { margin-top: 40px; }
+  .games-body { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 28px; margin-top: 24px; align-items: start; }
+  .panel { padding: 26px; }
   .diff-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
   .diff-head h3 { font-size: var(--s-m); }
-  .diff-file { font-size: var(--s-s); opacity: .75; }
-  .gpu { display: flex; align-items: center; gap: 10px; margin-top: 16px; font-size: var(--s-s); }
-  .gpu .seg { margin: 0; } .gpu .seg button { height: 36px; padding: 0 14px; font-size: 14px; }
+  .diff-file { font-size: var(--s-s); color: var(--text-2); }
+  .gpu { display: flex; align-items: center; gap: 12px; margin-top: 16px; font-size: var(--s-s); color: var(--text-2); }
+  .gpu .seg button { height: 36px; padding: 0 14px; font-size: 14px; }
   .rows { margin: 18px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
-  .rows li { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; padding: 12px 16px; border-radius: 12px; background: rgba(255,255,255,.05); animation: rowIn .5s var(--ease) both; }
+  .rows li { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; padding: 12px 16px; border-radius: 14px; background: rgba(255,255,255,.05); animation: rowIn .5s var(--ease) both; }
   .rows li span:last-child { font-weight: 650; white-space: nowrap; }
-  .rows .from { opacity: .55; text-decoration: line-through; margin-right: 8px; font-weight: 500; }
+  .rows .from { color: rgba(255,255,255,.5); text-decoration: line-through; margin-right: 8px; font-weight: 500; }
   .rows .to { color: var(--orchid); }
-  .keep { margin-top: 16px; font-size: var(--s-s); opacity: .8; }
+  .keep { margin-top: 16px; font-size: var(--s-s); color: var(--text-2); }
   @keyframes rowIn { from { opacity: 0; transform: translateY(10px); } }
-  .games-side .window img { aspect-ratio: 1304/795; object-fit: cover; }
-  .games-side p { margin-top: 16px; font-size: var(--s-s); opacity: .8; }
+  .tilt { padding: 8px; border-radius: var(--r); transform-style: preserve-3d; transition: transform .4s var(--ease); }
+  .tilt img { border-radius: calc(var(--r) - 8px); aspect-ratio: 1304/795; object-fit: cover; width: 100%; }
+  .games-side p { margin-top: 16px; font-size: var(--s-s); color: var(--text-2); }
 
-  /* ---------- chapter: four fields */
-  .steps { display: grid; grid-template-columns: repeat(4, 1fr); }
-  .step { position: relative; min-height: 84svh; padding: 120px 28px 32px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
-  .step:nth-child(1) { background: var(--paper); color: var(--ink-dark); }
-  .step:nth-child(2) { background: var(--orchid); color: var(--ink-dark); }
-  .step:nth-child(3) { background: var(--violet); color: #fff; }
-  .step:nth-child(4) { background: var(--purple); color: #fff; }
-  .step h2 { font-size: var(--s-m); position: absolute; top: 120px; left: 28px; right: 28px; }
-  .step .card { margin-top: 26%; border-radius: 16px; overflow: hidden; background: rgba(255,255,255,.35); padding: 6px; transition: transform .2s var(--ease); }
-  .step:nth-child(n+3) .card { background: rgba(255,255,255,.12); }
-  .step:hover .card { transform: translateY(-6px); }
-  .step .card img { border-radius: 11px; aspect-ratio: 4/3; object-fit: cover; object-position: var(--pos, 50% 0); }
-  .step p { font-size: clamp(19px, 1.6vw, 25px); font-weight: 650; letter-spacing: -0.015em; line-height: 1.2; margin-top: 28px; }
-  .step small { display: block; margin-top: 10px; font-size: var(--s-s); font-weight: 500; letter-spacing: 0; line-height: 1.45; opacity: .85; }
+  /* ---------- how it works */
+  .how { padding: 140px var(--m); }
+  .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 48px; }
+  .step { padding: 10px 10px 26px; transition: transform .45s var(--spring); }
+  .step img { border-radius: calc(var(--r) - 10px); aspect-ratio: 4/3; object-fit: cover; object-position: var(--pos, 50% 0); width: 100%; }
+  .step p { padding: 0 16px; margin-top: 22px; font-size: clamp(19px, 1.5vw, 24px); font-weight: 650; letter-spacing: -0.015em; line-height: 1.2; }
+  .step small { display: block; margin-top: 10px; font-size: var(--s-s); font-weight: 500; letter-spacing: 0; line-height: 1.5; color: var(--text-2); }
 
-  /* ---------- chapter: questions */
-  .faq { background: var(--paper); color: var(--ink-dark); padding: 160px var(--m); display: grid; grid-template-columns: 4fr 8fr; gap: 40px; }
-  .faq h2 { font-size: var(--s-l); position: sticky; top: 110px; align-self: start; max-width: 8ch; }
-  .faq-list { display: grid; gap: 8px; }
-  details { border-radius: 16px; background: #e8def4; transition: background .3s; }
-  details[open] { background: var(--purple); color: #fff; }
+  /* ---------- questions */
+  .faq { padding: 140px var(--m); display: grid; grid-template-columns: 4fr 8fr; gap: 40px; }
+  .faq h2 { position: sticky; top: 110px; align-self: start; max-width: 8ch; }
+  .faq-list { display: grid; gap: 10px; }
+  details { border-radius: 20px; transition: background .35s; }
+  details[open] { background: rgba(124,77,255,.2); }
   summary { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 20px; min-height: 72px; padding: 0 24px; font-size: 19px; font-weight: 650; cursor: pointer; }
   summary::-webkit-details-marker { display: none; }
   .pm { position: relative; flex: none; width: 16px; height: 16px; }
-  .pm::before, .pm::after { content: ''; position: absolute; left: 0; top: 6.5px; width: 16px; height: 3px; border-radius: 2px; background: currentColor; transition: transform .3s var(--ease); }
+  .pm::before, .pm::after { content: ''; position: absolute; left: 0; top: 6.5px; width: 16px; height: 3px; border-radius: 2px; background: currentColor; transition: transform .35s var(--spring); }
   .pm::after { transform: rotate(90deg); }
   details[open] .pm::after { transform: rotate(0); }
-  details p { padding: 0 24px 24px; max-width: 60ch; font-size: 17px; }
+  details p { padding: 0 24px 24px; max-width: 62ch; font-size: 17px; color: var(--text-2); }
 
-  /* ---------- chapter: get it */
-  .cta { background: var(--rose); color: var(--ink-dark); min-height: 90svh; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: end; padding: 140px var(--m) 80px; }
-  .cta h2 { font-size: clamp(56px, 7.5vw, 120px); line-height: .9; letter-spacing: -0.045em; }
-  .cta-copy p { margin-top: 22px; max-width: 42ch; }
-  .dl { align-self: center; justify-self: end; width: min(460px, 100%); border-radius: var(--r); background: rgba(255,255,255,.5); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 28px; box-shadow: 0 30px 80px -30px rgba(0,0,0,.25); }
+  /* ---------- get it */
+  .cta { padding: 140px var(--m) 120px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: center; }
+  .cta h2 { font-size: clamp(54px, 7vw, 116px); line-height: .92; letter-spacing: -0.045em; }
+  .cta h2 span { color: var(--orchid); }
+  .cta-copy p { margin-top: 22px; max-width: 42ch; color: var(--text-2); }
+  .dl { justify-self: end; width: min(460px, 100%); padding: 28px; }
   .dl-top { display: flex; gap: 16px; align-items: center; }
   .dl-top img { width: 64px; height: 64px; border-radius: 16px; }
   .dl-top b { font-size: 20px; letter-spacing: -0.02em; display: block; }
-  .dl dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 22px 0; font-size: 15px; }
-  .dl dt { opacity: .7; } .dl dd { margin: 0; font-weight: 650; text-align: right; }
-  .dl .btn { width: 100%; justify-content: center; }
+  .dl-top span { color: var(--text-2); }
+  .dl dl { display: grid; grid-template-columns: auto 1fr; gap: 10px 16px; margin: 22px 0; font-size: 15px; }
+  .dl dt { color: var(--text-2); } .dl dd { margin: 0; font-weight: 650; text-align: right; }
+  .dl .btn { width: 100%; }
   .dl .alt { display: flex; justify-content: space-between; margin-top: 16px; font-size: 15px; }
+  .link { font-weight: 650; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; }
 
-  /* ---------- footer of tiles */
-  footer { background: var(--void); padding: 10px; display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px; }
-  .tile { border-radius: 18px; background: #1a1022; padding: 24px; min-height: 220px; display: flex; flex-direction: column; justify-content: space-between; }
+  /* ---------- footer */
+  footer { padding: 10px var(--m) 24px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px; }
+  .tile { padding: 24px; min-height: 220px; display: flex; flex-direction: column; justify-content: space-between; }
   .t-state { grid-column: span 4; } .t-state p:first-child { font-size: 22px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.25; max-width: 24ch; }
-  .t-state small, .t-time small { font-size: 13px; opacity: .7; }
+  .t-state small, .t-time small { font-size: 13px; color: var(--text-2); }
   .t-nav { grid-column: span 3; } .t-nav ul, .t-social ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
   .t-nav a, .t-social a { text-decoration: none; } .t-nav a:hover, .t-social a:hover { text-decoration: underline; text-underline-offset: 4px; }
   .t-social { grid-column: span 2; }
   .t-time { grid-column: span 3; } .t-time b { font-size: 34px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
-  .t-word { grid-column: span 8; min-height: 320px; background: var(--purple); justify-content: center; align-items: center; overflow: hidden; }
-  .t-word span { font-size: 8.6vw; font-weight: 900; letter-spacing: -0.05em; line-height: 1; white-space: nowrap; }
-  .t-ask { grid-column: span 4; min-height: 320px; background: var(--orchid); color: var(--ink-dark); text-decoration: none; transition: background .25s; }
-  .t-ask:hover { background: #e9cdff; }
+  .t-word { grid-column: span 8; min-height: 300px; justify-content: center; align-items: center; overflow: hidden; }
+  .t-word span { font-size: 7.6vw; font-weight: 900; letter-spacing: -0.05em; line-height: 1; white-space: nowrap; color: #fff; }
+  .t-ask { grid-column: span 4; min-height: 300px; text-decoration: none; background: rgba(124,77,255,.28); transition: background .3s; }
+  .t-ask:hover { background: rgba(124,77,255,.4); }
   .t-ask p { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
-  .t-ask svg { align-self: flex-end; width: 56px; height: 56px; transition: transform .25s var(--ease); }
-  .t-ask:hover svg { transform: translate(4px, -4px); }
-  .tile-label { font-size: var(--s-s); opacity: .7; margin-bottom: 10px; }
+  .t-ask svg { align-self: flex-end; width: 56px; height: 56px; transition: transform .35s var(--spring); }
+  .t-ask:hover svg { transform: translate(5px, -5px); }
+  .tile-label { font-size: var(--s-s); color: var(--text-2); margin-bottom: 10px; }
 
   /* ---------- entrances (content stays visible without script) */
-  .js .rise { opacity: 0; transform: translateY(24px); transition: opacity .7s var(--ease), transform .7s var(--ease); transition-delay: calc(var(--i, 0) * 80ms); }
-  .js .rise.in { opacity: 1; transform: none; }
+  .js .rise { opacity: 0; transform: translateY(28px); filter: blur(6px); transition: opacity .8s var(--ease), transform .9s var(--ease), filter .8s var(--ease); transition-delay: calc(var(--i, 0) * 80ms); }
+  .js .rise.in { opacity: 1; transform: none; filter: none; }
 
   @media (max-width: 1000px) {
     .nav ul { display: none; }
     .nav > .btn { margin-left: auto; }
-    .tour { grid-template-columns: minmax(0, 1fr); }
-    .tour-stage { position: relative; height: auto; padding: 56px var(--m) 72px; }
-    .tour-copy { padding: 72px var(--m) 120px; }
-    .block { margin-top: 72px; }
-    .games-head, .games-body { grid-template-columns: 1fr; }
-    .steps { grid-template-columns: 1fr 1fr; }
-    .step { min-height: 72svh; }
-    .faq { grid-template-columns: 1fr; padding: 110px var(--m); }
+    .opt, .tour, .games-head, .games-body, .cta { grid-template-columns: minmax(0, 1fr); }
+    .opt { padding: 110px var(--m); }
+    .tour-stage { display: none; }
+    .card .shot-sm { display: block; margin-top: 18px; border-radius: 14px; aspect-ratio: 1304/795; object-fit: cover; width: 100%; }
+    .card[aria-current="true"], .card:hover { transform: none; }
+    .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .faq { grid-template-columns: minmax(0, 1fr); }
     .faq h2 { position: static; max-width: none; }
-    .cta { grid-template-columns: 1fr; align-items: start; padding-top: 120px; }
     .dl { justify-self: stretch; width: 100%; }
     footer { grid-template-columns: 1fr 1fr; }
-    .t-word, .t-ask { grid-column: span 2; min-height: 180px; }
-    .t-word span { font-size: 15vw; }
-    .t-state, .t-nav, .t-social, .t-time { grid-column: span 1; }
-    .t-state { grid-column: span 2; }
+    .t-word, .t-ask, .t-state { grid-column: span 2; }
+    .t-nav, .t-social, .t-time { grid-column: span 1; }
+    .t-word, .t-ask { min-height: 170px; }
+    .t-word span { font-size: 14vw; }
+    .stage3d { height: 64vw; }
   }
   @media (max-width: 620px) {
-    .nav { gap: 12px; } .nav .brand span { display: none; }
-    .headline h1 { font-size: 15vw; }
-    .hero-sub { bottom: 132px; font-size: 16px; }
-    .hero-cta { flex-direction: column; gap: 10px; bottom: 28px; }
-    .hero-cta .link { font-size: 15px; }
-    .hero-shot { padding-bottom: 90px; }
-    .switch-ch .copy { padding-top: 96px; }
-    .switch-ch { padding-bottom: 70vw; }
-    .big-toggle { font-size: 3.6vw; right: auto; left: var(--m); bottom: 8vw; }
-    .steps { grid-template-columns: 1fr; }
-    .step { min-height: 64svh; padding: 96px 20px 28px; }
-    .step h2 { top: 96px; left: 20px; }
-    .step .card { margin-top: 18%; }
-    .games { padding: 110px var(--m) 120px; }
+    .nav .brand span { display: none; }
+    .hero { padding-top: 130px; }
+    .hero h1 { font-size: 15.5vw; }
+    .hero-cta .btn { width: 100%; }
+    .win { width: 88vw; }
+    .stage3d { height: 78vw; margin-top: 48px; }
+    .gswitch { --w: 200px; font-size: 18px; }
+    .gswitch .track { height: 84px; }
+    .gswitch .knob { width: 64px; height: 64px; }
+    .gswitch[aria-checked="true"] .knob { transform: translateX(calc(var(--w) - 84px)); }
+    .gswitch[aria-checked="true"]:active .knob { transform: translateX(calc(var(--w) - 100px)); }
+    .steps { grid-template-columns: minmax(0, 1fr); }
+    .tour, .games, .how, .faq, .cta { padding-top: 100px; padding-bottom: 100px; }
     .rows li { grid-template-columns: 1fr; gap: 2px; }
     summary { font-size: 17px; min-height: 64px; padding: 14px 20px; }
     details p { padding: 0 20px 20px; font-size: 16px; }
+    .t-nav, .t-social, .t-time { grid-column: span 2; min-height: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
     html { scroll-behavior: auto; }
-    .js .rise { opacity: 1; transform: none; }
-    .hero-shot .window { transform: none !important; }
+    .js .rise { opacity: 1; transform: none; filter: none; }
   }
 </style>
 </head>
 <body>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<div class="grain" aria-hidden="true"></div>
 
-<nav class="nav" aria-label="Main">
-  <a class="brand" href="#top"><img src="assets/icon.png" alt="" width="30" height="30"><span>Buddy Optimizer</span></a>
+<nav class="nav glass" aria-label="Main">
+  <a class="brand" href="#top"><img src="assets/icon.png" alt="" width="32" height="32"><span>Buddy Optimizer</span></a>
   <ul>
+    <li><a href="#optimize">Optimize</a></li>
     <li><a href="#tour">Features</a></li>
     <li><a href="#games">Games</a></li>
-    <li><a href="#how">How it works</a></li>
     <li><a href="#faq">FAQ</a></li>
   </ul>
-  <a class="btn" href="https://github.com/itzBuddyyy/buddy-optimizer/releases/latest">Download</a>
+  <a class="btn" href="https://github.com/itzBuddyyy/buddy-optimizer/releases/latest" data-dl>Download</a>
 </nav>
 
 <main>
   <!-- HERO -->
-  <header class="hero" id="top" data-nav="dark">
-    <div class="hero-top">
-      <div class="headline">
-        <h1><span class="ink-top" style="display:block">More fps.<br>Less lag.</span><span class="ink-bot" aria-hidden="true">More fps.<br>Less lag.</span></h1>
-      </div>
-      <p class="hero-sub">Buddy Optimizer tunes Windows for competitive gaming in one click and sets pro settings for your games. Free, and every change can be undone.</p>
-      <div class="hero-cta">
-        <a class="btn" href="https://github.com/itzBuddyyy/buddy-optimizer/releases/latest">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
-          Download for Windows</a>
-        <a class="link" href="https://github.com/itzBuddyyy/buddy-optimizer">See the source</a>
+  <header class="hero" id="top">
+    <h1 class="rise"><span class="l1">More fps.</span><span class="l2">Less lag.</span></h1>
+    <p class="hero-sub rise" style="--i:1">Buddy Optimizer tunes Windows for competitive gaming in one click and sets pro settings for your games. Free, and every change can be undone.</p>
+    <div class="hero-cta rise" style="--i:2">
+      <a class="btn" href="https://github.com/itzBuddyyy/buddy-optimizer/releases/latest" data-dl>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+        Download for Windows</a>
+      <a class="btn ghost" href="https://github.com/itzBuddyyy/buddy-optimizer">See the source</a>
+    </div>
+    <div class="stage3d" id="stage3d" aria-label="App windows: click one to bring it to the front">
+      <div class="stack" id="stack">
+        <figure class="win glass" data-pos="left" style="margin:0"><img src="assets/optimize.jpg" width="1304" height="795" alt="Optimize screen with Quick Optimize and individual tweaks"><figcaption>Optimize: six steps in one click.</figcaption></figure>
+        <figure class="win glass" data-pos="right" style="margin:0"><img src="assets/games.jpg" width="1304" height="795" alt="Games screen with Call of Duty, Fortnite, Apex Legends and VALORANT cards"><figcaption>Games: pro settings per title.</figcaption></figure>
+        <figure class="win glass front" data-pos="front" style="margin:0"><img src="assets/dashboard.jpg" width="1304" height="795" alt="Dashboard with live processor, graphics card, memory, storage and network panels"><figcaption>Dashboard: every component, live.</figcaption></figure>
       </div>
     </div>
-    <figure class="hero-shot" style="margin:0">
-      <div class="window" id="heroWin"><img src="assets/dashboard.jpg" width="1304" height="795" alt="Buddy Optimizer dashboard with live processor, graphics card, memory, storage and network panels"></div>
-      <figcaption>The dashboard: every component, live, up to twice a second.</figcaption>
-    </figure>
   </header>
 
-  <!-- ONE CONTROL, BLOWN UP -->
-  <section class="switch-ch" id="switch" data-nav="dark" aria-labelledby="switch-h">
-    <div class="copy">
-      <h2 id="switch-h" class="rise"><span id="switchWord">Stock</span> Windows.</h2>
-      <p class="rise" style="--i:1">Windows ships tuned for office work. Flip the switch and see what Quick Optimize changes in six steps, starting with a System Restore point.</p>
-      <ul class="rise" style="--i:2" aria-live="polite">
-        <li><span>Power plan</span><b data-off="Balanced" data-on="Highest performance">Balanced</b></li>
-        <li><span>Game Mode and GPU priority</span><b data-off="Default" data-on="Games first">Default</b></li>
-        <li><span>Mouse acceleration</span><b data-off="On" data-on="Off, raw input">On</b></li>
-        <li><span>Telemetry and background services</span><b data-off="Running" data-on="Off">Running</b></li>
-        <li><span>Network latency (Nagle)</span><b data-off="Buffered" data-on="Instant">Buffered</b></li>
+  <!-- OPTIMIZE: glass switch + interactive 3D gauge -->
+  <section class="opt" id="optimize" aria-labelledby="opt-h">
+    <div class="opt-card glass rise">
+      <h2 id="opt-h" class="h2"><span class="word" id="optWord">Stock</span> Windows.</h2>
+      <p>Windows ships tuned for office work. Flip the switch to see what Quick Optimize changes, in order, starting with a System Restore point.</p>
+      <ul class="opt-list" id="optList" aria-live="polite">
+        <li><i class="tick"></i><span>Restore point</span><span class="val"><span class="old">None</span><span class="new">Created</span></span></li>
+        <li><i class="tick"></i><span>Power plan</span><span class="val"><span class="old">Balanced</span><span class="new">Highest perf.</span></span></li>
+        <li><i class="tick"></i><span>Game Mode and GPU priority</span><span class="val"><span class="old">Default</span><span class="new">Games first</span></span></li>
+        <li><i class="tick"></i><span>Mouse acceleration</span><span class="val"><span class="old">On</span><span class="new">Raw input</span></span></li>
+        <li><i class="tick"></i><span>Telemetry and services</span><span class="val"><span class="old">Running</span><span class="new">Off</span></span></li>
+        <li><i class="tick"></i><span>Temp files and leftovers</span><span class="val"><span class="old">Piling up</span><span class="new">Cleaned</span></span></li>
       </ul>
     </div>
-    <div class="big-toggle">
-      <button id="bigSwitch" role="switch" aria-checked="false" aria-label="Optimize Windows"><span class="lbl">Optimize</span><span class="knob"></span></button>
+    <div class="opt-side rise" style="--i:2">
+      <div class="gauge3d" id="gauge" role="img" aria-label="3D model of the Buddy Optimizer gauge; drag to turn it">
+        <img class="fallback" src="assets/icon.png" width="512" height="512" alt="">
+        <div class="readout"><b id="gaugeVal">35</b>% tuned</div>
+      </div>
+      <button class="gswitch" id="optSwitch" role="switch" aria-checked="false">
+        <span class="track"><span class="fill"></span><span class="knob"></span></span><span id="optLabel">Optimize</span>
+      </button>
+      <p class="hint">Drag the gauge to turn it. Flip the switch to run the six steps.</p>
     </div>
   </section>
 
-  <!-- PINNED TOUR -->
+  <!-- TOUR -->
   <section class="tour" id="tour" aria-labelledby="tour-h">
-    <figure class="tour-stage" style="margin:0" data-nav="dark">
-      <div class="window">
-        <img data-shot="dashboard" class="show" src="assets/dashboard.jpg" width="1304" height="795" alt="Dashboard with live hardware panels">
-        <img data-shot="optimize" src="assets/optimize.jpg" width="1304" height="795" alt="Optimize screen with Quick Optimize and individual tweaks" loading="lazy">
-        <img data-shot="games" src="assets/games.jpg" width="1304" height="795" alt="Games screen with Call of Duty, Fortnite, Apex Legends and VALORANT cards" loading="lazy">
-        <img data-shot="settings" src="assets/settings.jpg" width="1304" height="795" alt="Settings screen with appearance options" loading="lazy">
-        <img data-shot="lock" src="assets/lock.jpg" width="1320" height="860" alt="Lock screen with clock and password field" loading="lazy">
+    <div class="tour-stage">
+      <div class="tour-win glass" id="tourWin">
+        <div class="screens">
+          <img data-shot="dashboard" class="show" src="assets/dashboard.jpg" width="1304" height="795" alt="Dashboard with live hardware panels">
+          <img data-shot="optimize" src="assets/optimize.jpg" width="1304" height="795" alt="Optimize screen" loading="lazy">
+          <img data-shot="games" src="assets/games.jpg" width="1304" height="795" alt="Games screen" loading="lazy">
+          <img data-shot="settings" src="assets/settings.jpg" width="1304" height="795" alt="Settings screen" loading="lazy">
+          <img data-shot="lock" src="assets/lock.jpg" width="1320" height="860" alt="Lock screen with clock and password field" loading="lazy">
+        </div>
       </div>
-      <figcaption id="tourCap">Dashboard</figcaption>
-    </figure>
-    <div class="tour-copy" data-nav="light">
-      <h2 id="tour-h" class="rise">Everything in one window.</h2>
-      <div class="block" data-show="dashboard">
-        <h3 class="rise">See your whole PC, live.</h3>
-        <p class="rise" style="--i:1">Load, clocks, temperatures, fan speed and power for the graphics card; per-thread load for the processor; memory, drives, ping, jitter and packet loss. No administrator rights needed just to watch.</p>
-        <div class="seg rise" style="--i:2" role="group" aria-label="Refresh rate"><button aria-pressed="false">Every 2 s</button><button aria-pressed="true">Every 1 s</button><button aria-pressed="false">Every 0.5 s</button></div>
-      </div>
-      <div class="block" data-show="optimize">
-        <h3 class="rise">Tune Windows in one click.</h3>
-        <p class="rise" style="--i:1">Power plan, gaming tweaks, services, privacy and clean-up, one after another. Or pick single tweaks: debloat, startup apps, timer resolution, GPU profiles. Xbox mode keeps Game Pass working.</p>
-        <div class="seg rise" style="--i:2" role="group" aria-label="Run mode"><button aria-pressed="true">Apply</button><button aria-pressed="false">Preview only</button></div>
-      </div>
-      <div class="block" data-show="games">
-        <h3 class="rise">Pro settings for your games.</h3>
-        <p class="rise" style="--i:1">Call of Duty, Fortnite, Apex Legends and VALORANT, written straight into each game's own settings file. Your resolution, monitor and sensitivity stay yours.</p>
-        <div class="seg rise" style="--i:2" role="group" aria-label="Game"><button aria-pressed="true">COD</button><button aria-pressed="false">Fortnite</button><button aria-pressed="false">Apex</button><button aria-pressed="false">VALORANT</button></div>
-      </div>
-      <div class="block" data-show="settings">
-        <h3 class="rise">Make it yours.</h3>
-        <p class="rise" style="--i:1">Dark or light, how much glass, macOS- or Windows-style window controls, three motion levels, five languages, alerts when the GPU runs hot or ping climbs.</p>
-        <div class="seg rise" style="--i:2" role="group" aria-label="Theme"><button aria-pressed="true">Dark</button><button aria-pressed="false">Light</button><button aria-pressed="false">System</button></div>
-      </div>
-      <div class="block" data-show="lock">
-        <h3 class="rise">Undo anything. Lock everything.</h3>
-        <p class="rise" style="--i:1">Every registry value and service is recorded before it changes, so any session rolls back from Repair. A password lock keeps the app yours on a shared PC.</p>
-        <div class="seg rise" style="--i:2" role="group" aria-label="Auto-lock"><button aria-pressed="false">Never</button><button aria-pressed="true">15 min</button><button aria-pressed="false">30 min</button></div>
-      </div>
+      <p class="tour-cap" id="tourCap">Dashboard</p>
+    </div>
+    <div class="tour-copy">
+      <h2 id="tour-h" class="h2 rise">Everything in one window.</h2>
+      <p class="rise" style="--i:1">Scroll, or tap a card to see that screen.</p>
+      <button class="card glass rise" data-show="dashboard" aria-current="true">
+        <h3>See your whole PC, live.</h3>
+        <p>Load, clocks, temperatures, fan speed and power for the graphics card; per-thread load for the processor; memory, drives, ping, jitter and packet loss. No administrator rights needed just to watch.</p>
+        <img class="shot-sm" src="assets/dashboard.jpg" width="1304" height="795" alt="" loading="lazy">
+      </button>
+      <button class="card glass rise" data-show="optimize">
+        <h3>Tune Windows in one click.</h3>
+        <p>Power plan, gaming tweaks, services, privacy and clean-up, one after another. Or pick single tweaks: debloat, startup apps, timer resolution, GPU profiles. Xbox mode keeps Game Pass working.</p>
+        <img class="shot-sm" src="assets/optimize.jpg" width="1304" height="795" alt="" loading="lazy">
+      </button>
+      <button class="card glass rise" data-show="games">
+        <h3>Pro settings for your games.</h3>
+        <p>Call of Duty, Fortnite, Apex Legends and VALORANT, written straight into each game's own settings file. Your resolution, monitor and sensitivity stay yours.</p>
+        <img class="shot-sm" src="assets/games.jpg" width="1304" height="795" alt="" loading="lazy">
+      </button>
+      <button class="card glass rise" data-show="settings">
+        <h3>Make it yours.</h3>
+        <p>Dark or light, how much glass, macOS- or Windows-style window controls, three motion levels, five languages, and alerts when the GPU runs hot or ping climbs.</p>
+        <img class="shot-sm" src="assets/settings.jpg" width="1304" height="795" alt="" loading="lazy">
+      </button>
+      <button class="card glass rise" data-show="lock">
+        <h3>Undo anything. Lock everything.</h3>
+        <p>Every registry value and service is recorded before it changes, so any session rolls back from Repair. A password lock keeps the app yours on a shared PC.</p>
+        <img class="shot-sm" src="assets/lock.jpg" width="1320" height="860" alt="" loading="lazy">
+      </button>
     </div>
   </section>
 
-  <!-- GAMES: the live thing -->
-  <section class="games" id="games" data-nav="dark" aria-labelledby="games-h">
+  <!-- GAMES -->
+  <section class="games" id="games" aria-labelledby="games-h">
     <div class="games-head">
-      <h2 id="games-h" class="rise">Your game, tuned for a win.</h2>
+      <h2 id="games-h" class="h2 rise">Your game, tuned for a win.</h2>
       <p class="rise" style="--i:1">Pick a game and your graphics card to see the exact settings Buddy writes. It only changes keys the game already has, checks each value against what the game allows, and backs the file up first.</p>
     </div>
-    <div class="seg rise" style="--i:2" role="group" aria-label="Pick a game" id="gamePick">
+    <div class="seg glass rise" style="--i:2" role="group" aria-label="Pick a game" id="gamePick">
       <button aria-pressed="true" data-game="cod">Call of Duty</button>
       <button aria-pressed="false" data-game="fortnite">Fortnite</button>
       <button aria-pressed="false" data-game="apex">Apex Legends</button>
       <button aria-pressed="false" data-game="valorant">VALORANT</button>
     </div>
     <div class="games-body">
-      <div class="panel rise" style="--i:3" data-ui>
-        <div class="diff-head"><h3 id="diffTitle">Warzone, Black Ops 7, MW4</h3><span class="diff-file" id="diffFile">s.1.0.cod25.txt0</span></div>
+      <div class="panel glass rise" style="--i:3" data-ui>
+        <div class="diff-head"><h3 id="diffTitle">Warzone, Black Ops 7, MW4</h3><span class="diff-file" id="diffFile"></span></div>
         <div class="gpu"><span>Graphics card</span>
-          <div class="seg" role="group" aria-label="Graphics card" id="gpuPick"><button aria-pressed="true" data-gpu="nvidia">NVIDIA</button><button aria-pressed="false" data-gpu="amd">AMD</button></div>
+          <div class="seg glass" role="group" aria-label="Graphics card" id="gpuPick"><button aria-pressed="true" data-gpu="nvidia">NVIDIA</button><button aria-pressed="false" data-gpu="amd">AMD</button></div>
         </div>
         <ul class="rows" id="diffRows" aria-live="polite"></ul>
         <p class="keep" id="diffKeep"></p>
       </div>
       <figure class="games-side rise" style="--i:4;margin:0">
-        <div class="window"><img src="assets/games.jpg" width="1304" height="795" alt="The Games screen in Buddy Optimizer" loading="lazy"></div>
+        <div class="tilt glass" data-tilt><img src="assets/games.jpg" width="1304" height="795" alt="The Games screen in Buddy Optimizer" loading="lazy"></div>
         <p>Close the game, press Optimize, play. One click on Restore puts the file back exactly as it was.</p>
       </figure>
     </div>
   </section>
 
   <!-- HOW IT WORKS -->
-  <section class="steps" id="how" aria-label="How it works">
-    <div class="step rise" data-nav="light">
-      <h2>Up and running in a minute.</h2>
-      <div class="card" style="--pos: 50% 40%"><img src="assets/icon.png" width="512" height="512" alt="Buddy Optimizer app icon" loading="lazy" style="aspect-ratio:4/3;object-fit:contain;background:#0b0612"></div>
-      <p>First, install it.<small>Download the installer from GitHub and run it. Windows 10 or 11, 64-bit.</small></p>
-    </div>
-    <div class="step rise" style="--i:1" data-nav="light">
-      <div class="card" style="--pos: 50% 30%"><img src="assets/lock.jpg" width="1320" height="860" alt="Lock screen" loading="lazy"></div>
-      <p>Then unlock it.<small>Enter the password your distributor gave you. Monitoring starts straight away.</small></p>
-    </div>
-    <div class="step rise" style="--i:2" data-nav="dark">
-      <div class="card" style="--pos: 60% 0%"><img src="assets/optimize.jpg" width="1304" height="795" alt="Optimize screen" loading="lazy"></div>
-      <p>Next, optimize.<small>Windows asks once for administrator rights. Quick Optimize starts with a restore point.</small></p>
-    </div>
-    <div class="step rise" style="--i:3" data-nav="dark">
-      <div class="card" style="--pos: 40% 0%"><img src="assets/games.jpg" width="1304" height="795" alt="Games screen" loading="lazy"></div>
-      <p>Last, restart and play.<small>Tune your games too. Updates install themselves from then on.</small></p>
+  <section class="how" id="how" aria-labelledby="how-h">
+    <h2 id="how-h" class="h2 rise">Up and running in a minute.</h2>
+    <div class="steps">
+      <div class="step glass rise" data-tilt><img src="assets/icon.png" width="512" height="512" alt="Buddy Optimizer app icon" loading="lazy" style="object-fit:contain;background:#0b0612;padding:12%"><p>First, install it.<small>Download the installer from GitHub and run it. Windows 10 or 11, 64-bit.</small></p></div>
+      <div class="step glass rise" style="--i:1" data-tilt><img src="assets/lock.jpg" width="1320" height="860" alt="Lock screen" loading="lazy" style="--pos:50% 30%"><p>Then unlock it.<small>Enter the password your distributor gave you. Monitoring starts straight away.</small></p></div>
+      <div class="step glass rise" style="--i:2" data-tilt><img src="assets/optimize.jpg" width="1304" height="795" alt="Optimize screen" loading="lazy" style="--pos:55% 0%"><p>Next, optimize.<small>Windows asks once for administrator rights. Quick Optimize starts with a restore point.</small></p></div>
+      <div class="step glass rise" style="--i:3" data-tilt><img src="assets/games.jpg" width="1304" height="795" alt="Games screen" loading="lazy" style="--pos:40% 0%"><p>Last, restart and play.<small>Tune your games too. Updates install themselves from then on.</small></p></div>
     </div>
   </section>
 
   <!-- FAQ -->
-  <section class="faq" id="faq" data-nav="light" aria-labelledby="faq-h">
-    <h2 id="faq-h" class="rise">Good questions.</h2>
+  <section class="faq" id="faq" aria-labelledby="faq-h">
+    <h2 id="faq-h" class="h2 rise">Good questions.</h2>
     <div class="faq-list">
-      <details name="faq" open class="rise"><summary>Is it free?<span class="pm" aria-hidden="true"></span></summary><p>Yes. Buddy Optimizer is free and open source under the MIT license. The full source is on GitHub.</p></details>
-      <details name="faq" class="rise"><summary>Can it get me banned?<span class="pm" aria-hidden="true"></span></summary><p>Buddy never touches game files or game memory. It only edits the settings files the games write themselves, the same ones the in-game menu saves, and it does not install the kernel driver some anti-cheats block.</p></details>
-      <details name="faq" class="rise"><summary>Can I undo the changes?<span class="pm" aria-hidden="true"></span></summary><p>Yes. Every registry value, service and command is recorded before it changes, and any session rolls back from Optimize, Repair. Quick Optimize also creates a System Restore point first, and each game has its own Restore button.</p></details>
-      <details name="faq" class="rise"><summary>Why does Windows ask for administrator rights?<span class="pm" aria-hidden="true"></span></summary><p>Monitoring runs without them. Changing system settings needs them, so Windows asks once per session, the first time you optimize something.</p></details>
-      <details name="faq" class="rise"><summary>Windows says "Windows protected your PC". Is that normal?<span class="pm" aria-hidden="true"></span></summary><p>Yes. The installer is not code-signed yet, so SmartScreen warns about it. Click More info, then Run anyway.</p></details>
-      <details name="faq" class="rise"><summary>Which games are supported?<span class="pm" aria-hidden="true"></span></summary><p>Call of Duty (Warzone, Black Ops 7 and Modern Warfare 4), Fortnite, Apex Legends and VALORANT. The Windows tweaks help every game.</p></details>
-      <details name="faq" class="rise"><summary>Why is there no CPU temperature?<span class="pm" aria-hidden="true"></span></summary><p>Reading it needs a kernel driver that some anti-cheats, such as FACEIT, block. Buddy leaves it out on purpose; graphics card temperatures are shown.</p></details>
-      <details name="faq" class="rise"><summary>Does it update itself?<span class="pm" aria-hidden="true"></span></summary><p>Yes, from version 1.1.1 on. When an update has downloaded, the app shows a banner and a Windows notification with a one-click restart.</p></details>
+      <details name="faq" open class="glass rise"><summary>Is it free?<span class="pm" aria-hidden="true"></span></summary><p>Yes. Buddy Optimizer is free and open source under the MIT license. The full source is on GitHub.</p></details>
+      <details name="faq" class="glass rise"><summary>Can it get me banned?<span class="pm" aria-hidden="true"></span></summary><p>Buddy never touches game files or game memory. It only edits the settings files the games write themselves, the same ones the in-game menu saves, and it does not install the kernel driver some anti-cheats block.</p></details>
+      <details name="faq" class="glass rise"><summary>Can I undo the changes?<span class="pm" aria-hidden="true"></span></summary><p>Yes. Every registry value, service and command is recorded before it changes, and any session rolls back from Optimize, Repair. Quick Optimize also creates a System Restore point first, and each game has its own Restore button.</p></details>
+      <details name="faq" class="glass rise"><summary>Why does Windows ask for administrator rights?<span class="pm" aria-hidden="true"></span></summary><p>Monitoring runs without them. Changing system settings needs them, so Windows asks once per session, the first time you optimize something.</p></details>
+      <details name="faq" class="glass rise"><summary>Windows says "Windows protected your PC". Is that normal?<span class="pm" aria-hidden="true"></span></summary><p>Yes. The installer is not code-signed yet, so SmartScreen warns about it. Click More info, then Run anyway.</p></details>
+      <details name="faq" class="glass rise"><summary>Which games are supported?<span class="pm" aria-hidden="true"></span></summary><p>Call of Duty (Warzone, Black Ops 7 and Modern Warfare 4), Fortnite, Apex Legends and VALORANT. The Windows tweaks help every game.</p></details>
+      <details name="faq" class="glass rise"><summary>Why is there no CPU temperature?<span class="pm" aria-hidden="true"></span></summary><p>Reading it needs a kernel driver that some anti-cheats, such as FACEIT, block. Buddy leaves it out on purpose; graphics card temperatures are shown.</p></details>
+      <details name="faq" class="glass rise"><summary>Does it update itself?<span class="pm" aria-hidden="true"></span></summary><p>Yes, from version 1.1.1 on. When an update has downloaded, the app shows a banner and a Windows notification with a one-click restart.</p></details>
     </div>
   </section>
 
   <!-- CTA -->
-  <section class="cta" id="get" data-nav="light" aria-labelledby="get-h">
+  <section class="cta" id="get" aria-labelledby="get-h">
     <div class="cta-copy">
-      <h2 id="get-h" class="rise">Get Buddy.<br>Play better.</h2>
+      <h2 id="get-h" class="rise">Get Buddy.<br><span>Play better.</span></h2>
       <p class="rise" style="--i:1">The download is the installer from the latest GitHub release. Run it, unlock the app, and start with Quick Optimize.</p>
     </div>
-    <div class="dl rise" style="--i:2" data-ui>
+    <div class="dl glass rise" style="--i:2" data-ui>
       <div class="dl-top"><img src="assets/icon.png" width="64" height="64" alt=""><div><b>Buddy Optimizer</b><span id="ver">Latest release</span></div></div>
       <dl>
         <dt>System</dt><dd>Windows 10 / 11, 64-bit</dd>
         <dt>Download</dt><dd id="size">About 136 MB</dd>
         <dt>License</dt><dd>MIT, free</dd>
       </dl>
-      <a class="btn dark" id="dlBtn" href="https://github.com/itzBuddyyy/buddy-optimizer/releases/latest">
+      <a class="btn" href="https://github.com/itzBuddyyy/buddy-optimizer/releases/latest" data-dl>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
         Download for Windows</a>
       <div class="alt"><a class="link" href="https://github.com/itzBuddyyy/buddy-optimizer/releases">All releases</a><a class="link" href="https://github.com/itzBuddyyy/buddy-optimizer">Source code</a></div>
@@ -429,15 +471,15 @@
   </section>
 </main>
 
-<footer data-nav="dark">
-  <div class="tile t-state rise">
+<footer>
+  <div class="tile glass t-state rise">
     <p>Made by itzBuddy for players who want every frame.</p>
     <small>© 2026 itzBuddy · MIT license · Not affiliated with Activision, Epic Games, Electronic Arts or Riot Games.</small>
   </div>
-  <div class="tile t-nav rise" style="--i:1"><div class="tile-label">Buddy Optimizer</div>
-    <ul><li><a href="#tour">Features</a></li><li><a href="#games">Games</a></li><li><a href="#how">How it works</a></li><li><a href="#faq">FAQ</a></li><li><a href="https://github.com/itzBuddyyy/buddy-optimizer">GitHub</a></li></ul>
+  <div class="tile glass t-nav rise" style="--i:1"><div class="tile-label">Buddy Optimizer</div>
+    <ul><li><a href="#optimize">Optimize</a></li><li><a href="#tour">Features</a></li><li><a href="#games">Games</a></li><li><a href="#faq">FAQ</a></li><li><a href="https://github.com/itzBuddyyy/buddy-optimizer">GitHub</a></li></ul>
   </div>
-  <div class="tile t-social rise" style="--i:2"><div class="tile-label">Follow</div>
+  <div class="tile glass t-social rise" style="--i:2"><div class="tile-label">Follow</div>
     <ul>
       <li><a href="https://www.instagram.com/itzbuddyy_" rel="me">Instagram</a></li>
       <li><a href="https://www.tiktok.com/@itzbuddyy_" rel="me">TikTok</a></li>
@@ -446,9 +488,9 @@
       <li><a href="https://beacons.ai/itzbuddy" rel="me">All links</a></li>
     </ul>
   </div>
-  <div class="tile t-time rise" style="--i:3"><div class="tile-label">Your PC's time</div><b id="clock">--:--</b><small>Built in Italy · Windows only</small></div>
-  <div class="tile t-word" aria-hidden="true"><span>Buddy Optimizer</span></div>
-  <a class="tile t-ask" href="https://docs.google.com/forms/d/e/1FAIpQLScflAUtBtFT0YAb4ZV8Qgbsof2tyX0aoYFFccm4FETkgHmYDg/viewform">
+  <div class="tile glass t-time rise" style="--i:3"><div class="tile-label">Your PC's time</div><b id="clock">--:--</b><small>Built in Italy · Windows only</small></div>
+  <div class="tile glass t-word" aria-hidden="true"><span>Buddy Optimizer</span></div>
+  <a class="tile glass t-ask" href="https://docs.google.com/forms/d/e/1FAIpQLScflAUtBtFT0YAb4ZV8Qgbsof2tyX0aoYFFccm4FETkgHmYDg/viewform">
     <p>Want an AI project?<br>Ask itzBuddy.</p>
     <svg viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 42 42 14M20 14h22v22"/></svg>
   </a>
@@ -457,56 +499,114 @@
 <script>
 document.documentElement.classList.add('js')
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+const fine = matchMedia('(pointer: fine)').matches
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v))
 
-// entrances: each part of a section rises once as it enters
+// entrances
 const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) } }), { rootMargin: '0px 0px -8% 0px' })
 document.querySelectorAll('.rise').forEach((el) => io.observe(el))
 
-// glass header takes the ink of the chapter under it
-const nav = document.querySelector('.nav')
-function navInk() {
-  const y = nav.getBoundingClientRect().bottom - 30
-  const el = document.elementsFromPoint(innerWidth / 2, y).map((n) => n.closest('[data-nav]')).find(Boolean)
-  nav.classList.toggle('light', el?.dataset.nav === 'light')
+// glass sheen follows the pointer
+document.addEventListener('pointermove', (e) => {
+  const g = e.target.closest?.('.glass'); if (!g) return
+  const r = g.getBoundingClientRect()
+  g.style.setProperty('--mx', `${e.clientX - r.left}px`); g.style.setProperty('--my', `${e.clientY - r.top}px`)
+}, { passive: true })
+
+// tilt on hover for pictures and cards
+if (fine && !reduce) document.querySelectorAll('[data-tilt]').forEach((el) => {
+  el.addEventListener('pointermove', (e) => {
+    const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5
+    el.style.transform = `perspective(900px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) translateY(-4px)`
+  })
+  el.addEventListener('pointerleave', () => { el.style.transform = '' })
+})
+
+// ---------- hero: 3D stack of app windows
+const stage = document.getElementById('stage3d'), stack = document.getElementById('stack')
+const wins = [...stack.querySelectorAll('.win')]
+let spread = 0, tiltX = 0, tiltY = 0
+function layout() {
+  const fan = innerWidth < 620 ? .55 : 1
+  for (const w of wins) {
+    const pos = w.dataset.pos
+    let t
+    if (pos === 'front') t = `translate3d(-50%, ${(1 - spread) * 40}px, ${60 + spread * 40}px) rotateX(${(1 - spread) * 16}deg)`
+    else {
+      const s = pos === 'left' ? -1 : 1
+      t = `translate3d(calc(-50% + ${s * (6 + spread * 24) * fan}vw), ${-30 - spread * 30}px, ${-140 - spread * 60}px) rotateY(${-s * (8 + spread * 14)}deg) rotateX(${(1 - spread) * 14}deg) scale(.86)`
+    }
+    w.style.transform = t
+    w.style.zIndex = pos === 'front' ? 3 : 1
+    w.classList.toggle('front', pos === 'front')
+  }
+  stack.style.transform = `rotateX(${tiltY}deg) rotateY(${tiltX}deg)`
+}
+function heroScroll() {
+  if (reduce) { spread = .6; return layout() }
+  const r = stage.getBoundingClientRect()
+  spread = clamp(1 - (r.top - innerHeight * .1) / (innerHeight * .8), 0, 1)
+  layout()
+}
+// click a window to bring it to the front
+wins.forEach((w) => w.addEventListener('click', () => {
+  if (w.dataset.pos === 'front') return
+  const front = wins.find((x) => x.dataset.pos === 'front')
+  front.dataset.pos = w.dataset.pos; w.dataset.pos = 'front'; layout()
+}))
+if (fine && !reduce) {
+  stage.addEventListener('pointermove', (e) => {
+    const r = stage.getBoundingClientRect()
+    tiltX = ((e.clientX - r.left) / r.width - .5) * 8; tiltY = -((e.clientY - r.top) / r.height - .5) * 6; layout()
+  })
+  stage.addEventListener('pointerleave', () => { tiltX = tiltY = 0; layout() })
 }
 
-// hero screenshot rises and settles as you scroll
-const heroWin = document.getElementById('heroWin')
-function heroMove() {
-  if (reduce) return
-  const r = heroWin.getBoundingClientRect()
-  const t = Math.min(1, Math.max(0, 1 - (r.top - innerHeight * .15) / (innerHeight * .85)))
-  heroWin.style.transform = `perspective(1400px) rotateX(${(1 - t) * 18}deg) scale(${.86 + t * .14}) translateY(${(1 - t) * 40}px)`
+// ---------- optimize switch
+const sw = document.getElementById('optSwitch'), word = document.getElementById('optWord'), items = [...document.querySelectorAll('#optList li')]
+let optOn = false, timers = []
+window.__gaugeTarget = .35
+sw.addEventListener('click', () => {
+  optOn = !optOn
+  sw.setAttribute('aria-checked', String(optOn))
+  document.getElementById('optLabel').textContent = optOn ? 'Optimized' : 'Optimize'
+  word.classList.add('swap')
+  setTimeout(() => { word.textContent = optOn ? 'Tuned' : 'Stock'; word.classList.remove('swap') }, reduce ? 0 : 260)
+  timers.forEach(clearTimeout); timers = []
+  const list = optOn ? items : [...items].reverse()
+  list.forEach((li, i) => timers.push(setTimeout(() => li.classList.toggle('done', optOn), reduce ? 0 : 140 + i * 160)))
+  window.__gaugeTarget = optOn ? .96 : .35
+})
+
+// ---------- tour: sticky window follows the card you read; cards are clickable
+const shots = document.querySelectorAll('.tour-win img'), cap = document.getElementById('tourCap'), cards = [...document.querySelectorAll('.card')]
+const names = { dashboard: 'Dashboard', optimize: 'Optimize', games: 'Games', settings: 'Settings', lock: 'Lock screen' }
+function showShot(id) {
+  shots.forEach((s) => s.classList.toggle('show', s.dataset.shot === id))
+  cards.forEach((c) => c.setAttribute('aria-current', String(c.dataset.show === id)))
+  cap.textContent = names[id]
 }
+const tio = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) showShot(e.target.dataset.show) }), { rootMargin: '-45% 0px -45% 0px' })
+cards.forEach((c) => { tio.observe(c); c.addEventListener('click', () => showShot(c.dataset.show)) })
+const tourWin = document.getElementById('tourWin')
+if (fine && !reduce) {
+  tourWin.addEventListener('pointermove', (e) => {
+    const r = tourWin.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5
+    tourWin.style.transform = `rotateY(${x * 8}deg) rotateX(${-y * 8}deg)`
+  })
+  tourWin.addEventListener('pointerleave', () => { tourWin.style.transform = '' })
+}
+
 let ticking = false
-addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { navInk(); heroMove(); ticking = false }) } }, { passive: true })
-addEventListener('resize', () => { navInk(); heroMove() })
-navInk(); heroMove()
+addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { heroScroll(); ticking = false }) } }, { passive: true })
+addEventListener('resize', heroScroll)
+heroScroll()
 
-// segmented controls
+// ---------- segmented controls (the games picker: every press changes the panel)
 document.querySelectorAll('.seg').forEach((seg) => seg.addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return
   seg.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
 }))
-
-// the big switch
-const sw = document.getElementById('bigSwitch'), swCh = document.getElementById('switch')
-sw.addEventListener('click', () => {
-  const on = sw.getAttribute('aria-checked') !== 'true'
-  sw.setAttribute('aria-checked', String(on))
-  swCh.classList.toggle('on', on)
-  swCh.dataset.nav = on ? 'light' : 'dark'
-  document.getElementById('switchWord').textContent = on ? 'Tuned' : 'Stock'
-  swCh.querySelectorAll('li b').forEach((b) => (b.textContent = on ? b.dataset.on : b.dataset.off))
-  navInk()
-})
-
-// pinned tour: the picture follows the block you are reading
-const shots = document.querySelectorAll('.tour-stage img'), cap = document.getElementById('tourCap')
-const names = { dashboard: 'Dashboard', optimize: 'Optimize', games: 'Games', settings: 'Settings', lock: 'Lock screen' }
-const showShot = (id) => { shots.forEach((s) => s.classList.toggle('show', s.dataset.shot === id)); cap.textContent = names[id] }
-const tio = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) showShot(e.target.dataset.show) }), { rootMargin: '-45% 0px -45% 0px' })
-document.querySelectorAll('.block').forEach((b) => { tio.observe(b); b.addEventListener('click', () => showShot(b.dataset.show)) })
 
 // games: the real settings each profile writes (from engine/files/games and Games.ps1)
 const GAMES = {
@@ -560,16 +660,112 @@ const clock = document.getElementById('clock')
 const tick = () => (clock.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
 tick(); setInterval(tick, 15000)
 
-// latest version and size straight from GitHub (falls back to the static text)
+// latest version and size from GitHub (falls back to the static text)
 fetch('https://api.github.com/repos/itzBuddyyy/buddy-optimizer/releases/latest').then((r) => r.ok ? r.json() : null).then((rel) => {
   if (!rel) return
   const exe = rel.assets?.find((a) => a.name.endsWith('.exe'))
   document.getElementById('ver').textContent = 'Version ' + rel.tag_name.replace(/^v/, '')
   if (exe) {
     document.getElementById('size').textContent = Math.round(exe.size / 1e6) + ' MB'
-    document.getElementById('dlBtn').href = exe.browser_download_url
+    document.querySelectorAll('[data-dl]').forEach((a) => (a.href = exe.browser_download_url))
   }
 }).catch(() => {})
+</script>
+
+<!-- 3D gauge: the app icon rebuilt in three.js; drag to turn it, the needle follows the switch -->
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/" } }</script>
+<script type="module">
+import * as THREE from 'three'
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
+
+const host = document.getElementById('gauge')
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+let renderer = null
+try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }) } catch { /* no WebGL: the icon image stays */ }
+if (renderer) {
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+  renderer.toneMapping = THREE.ACESFilmicToneMapping
+  renderer.outputColorSpace = THREE.SRGBColorSpace
+  host.prepend(renderer.domElement)
+  host.querySelector('.fallback').remove()
+
+  const scene = new THREE.Scene()
+  const pmrem = new THREE.PMREMGenerator(renderer)
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), .04).texture
+  const camera = new THREE.PerspectiveCamera(32, 1, .1, 50)
+  camera.position.set(0, 0, 7.2)
+
+  const rig = new THREE.Group(); scene.add(rig)
+  // glass squircle (the icon's body)
+  const body = new THREE.Mesh(new RoundedBoxGeometry(2.6, 2.6, .5, 10, .62), new THREE.MeshPhysicalMaterial({
+    color: 0x5a2d7a, metalness: .05, roughness: .08, transmission: .55, thickness: 1.2, ior: 1.45, clearcoat: 1, clearcoatRoughness: .05,
+    attenuationColor: new THREE.Color(0x442244), attenuationDistance: 1.4
+  }))
+  rig.add(body)
+  const face = new THREE.Mesh(new THREE.CircleGeometry(1.02, 96), new THREE.MeshStandardMaterial({ color: 0x0b0612, roughness: .4, metalness: .2 }))
+  face.position.z = .26; rig.add(face)
+
+  // dial: 270 degrees with the gap at the bottom
+  const START = -Math.PI / 4, SWEEP = Math.PI * 1.5
+  const track = new THREE.Mesh(new THREE.TorusGeometry(.82, .055, 20, 120, SWEEP), new THREE.MeshStandardMaterial({ color: 0x3a2350, roughness: .5 }))
+  track.rotation.z = START; track.position.z = .3; rig.add(track)
+  const glowMat = new THREE.MeshStandardMaterial({ color: 0xdcb4ff, emissive: 0xc25cc0, emissiveIntensity: 1.2, roughness: .3 })
+  const progress = new THREE.Mesh(new THREE.TorusGeometry(.82, .075, 20, 120, .01), glowMat)
+  progress.position.z = .31; rig.add(progress)
+  for (let i = 0; i <= 10; i++) {
+    const a = START + SWEEP - (SWEEP * i) / 10
+    const t = new THREE.Mesh(new THREE.BoxGeometry(.035, i % 5 ? .1 : .18, .03), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: .25 }))
+    t.position.set(Math.cos(a) * .64, Math.sin(a) * .64, .3); t.rotation.z = a - Math.PI / 2; rig.add(t)
+  }
+  const needleGeo = new THREE.BoxGeometry(.06, .7, .05); needleGeo.translate(0, .33, 0)
+  const needle = new THREE.Mesh(needleGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: .6 }))
+  needle.position.z = .34; rig.add(needle)
+  const hub = new THREE.Mesh(new THREE.CylinderGeometry(.11, .11, .08, 40), new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: .6, roughness: .2 }))
+  hub.rotation.x = Math.PI / 2; hub.position.z = .36; rig.add(hub)
+
+  const key = new THREE.PointLight(0xc78cff, 30, 20); key.position.set(3, 3, 4); scene.add(key)
+  const rim = new THREE.PointLight(0xef8fd8, 18, 20); rim.position.set(-4, -2, 2); scene.add(rim)
+
+  // interaction: drag to turn, gentle float, scrolling adds a little turn
+  let dragging = false, lx = 0, ly = 0, rotY = -.35, rotX = .18, velY = 0
+  host.addEventListener('pointerdown', (e) => { dragging = true; lx = e.clientX; ly = e.clientY; host.setPointerCapture(e.pointerId) })
+  host.addEventListener('pointermove', (e) => {
+    if (!dragging) return
+    velY = (e.clientX - lx) * .01; rotY += velY
+    rotX = Math.max(-.7, Math.min(.7, rotX + (e.clientY - ly) * .006))
+    lx = e.clientX; ly = e.clientY
+  })
+  addEventListener('pointerup', () => { dragging = false })
+
+  let value = .35, shown = -1, visible = true
+  const readout = document.getElementById('gaugeVal')
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting }).observe(host)
+  const size = () => { const w = host.clientWidth; renderer.setSize(w, w, false) }
+  new ResizeObserver(size).observe(host); size()
+
+  const clock = new THREE.Clock()
+  renderer.setAnimationLoop(() => {
+    if (!visible) return
+    const t = clock.getElapsedTime()
+    const target = window.__gaugeTarget ?? .35
+    value += (target - value) * (reduce ? 1 : .06)
+    if (Math.abs(value - shown) > .002) {
+      shown = value
+      progress.geometry.dispose()
+      progress.geometry = new THREE.TorusGeometry(.82, .075, 20, 120, Math.max(.01, SWEEP * value))
+      progress.rotation.z = START + SWEEP - SWEEP * value
+      needle.rotation.z = (START + SWEEP - SWEEP * value) - Math.PI / 2
+      glowMat.emissiveIntensity = .8 + value * 1.6
+      readout.textContent = Math.round(value * 100)
+    }
+    if (!dragging) { velY *= .94; rotY += velY + (reduce ? 0 : Math.sin(t * .6) * .0015); rotX += (.18 - rotX) * .02 }
+    const scrollTurn = (host.getBoundingClientRect().top / innerHeight - .3) * .6
+    rig.rotation.set(rotX + (reduce ? 0 : Math.sin(t * .8) * .03), rotY + scrollTurn, 0)
+    rig.position.y = reduce ? 0 : Math.sin(t * 1.1) * .06
+    renderer.render(scene, camera)
+  })
+}
 </script>
 </body>
 </html>
