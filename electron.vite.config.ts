@@ -15,7 +15,7 @@ const cspPlugin = (): Plugin => ({
 export default defineConfig({
   main: {
     build: { outDir: 'out/main' },
-    resolve: { alias: { '@shared': resolve('src/shared') } }
+    resolve: { alias: { '@shared': resolve('src/shared'), '@winutil': resolve('engine/winutil') } }
   },
   preload: {
     build: { outDir: 'out/preload' },
@@ -24,7 +24,7 @@ export default defineConfig({
   renderer: {
     root: 'src/renderer',
     build: { outDir: 'out/renderer' },
-    resolve: { alias: { '@shared': resolve('src/shared'), '@': resolve('src/renderer/src') } },
+    resolve: { alias: { '@shared': resolve('src/shared'), '@winutil': resolve('engine/winutil'), '@': resolve('src/renderer/src') } },
     plugins: [react(), cspPlugin()]
   }
 })

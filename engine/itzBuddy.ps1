@@ -66,6 +66,11 @@ $script:Menu = @(
     @{ Key = '17'; Kind = 'Repair';      Label = 'Deep network reset (Winsock + TCP/IP, for broken connections)'; Run = { Invoke-DeepNetworkReset } }
     @{ Key = '18'; Kind = 'Repair';      Label = 'Undo a previous itzBuddy session';                       Run = { Invoke-Undo } }
     @{ Key = '19'; Kind = 'Repair';      Label = 'Create a System Restore point now';                      Run = { New-RestorePoint } }
+
+    @{ Key = '20'; Kind = 'WinUtil';     Label = 'Tweaks: all 64 WinUtil tweaks by category, presets, undo';  Run = { Invoke-WinUtilTweaksMenu } }
+    @{ Key = '21'; Kind = 'WinUtil';     Label = 'Apps: install, update or remove 239 apps (WinGet / Chocolatey)'; Run = { Invoke-WinUtilAppsMenu } }
+    @{ Key = '22'; Kind = 'WinUtil';     Label = 'System tools: features, repairs, Windows Update, Store apps, DNS, panels...'; Run = { Invoke-WinUtilSystemMenu } }
+    @{ Key = '23'; Kind = 'WinUtil';     Label = 'Windows 11 ISO creator: unattended ISO or bootable USB';  Run = { Invoke-WinUtilIsoMenu } }
 )
 
 function Show-Banner {
@@ -77,7 +82,7 @@ function Show-Banner {
     Write-Host '  | | __|_  /  _ \| | | |/ _` |/ _` | | | |' -ForegroundColor Magenta
     Write-Host '  | | |_ / /| |_) | |_| | (_| | (_| | |_| |' -ForegroundColor Magenta
     Write-Host '  |_|\__/___|____/ \__,_|\__,_|\__,_|\__, |' -ForegroundColor Magenta
-    Write-Host '        Optimization Suite v3.0      |___/ ' -ForegroundColor Magenta
+    Write-Host '        Optimization Suite v3.1      |___/' -ForegroundColor Magenta
     Write-Host ''
     $type = if ($s.IsLaptop) { 'Laptop' } else { 'Desktop' }
     $disk = if ($s.SystemSSD) { 'SSD' } else { 'HDD' }
@@ -154,7 +159,8 @@ function Show-Menu {
     $sections = @(
         @{ Kind = 'Recommended'; Title = 'RECOMMENDED  - one confirmation each';  Color = 'Green' },
         @{ Kind = 'Optional';    Title = 'OPTIONAL  - you choose what to apply';  Color = 'Cyan' },
-        @{ Kind = 'Repair';      Title = 'REPAIR & RESTORE';                       Color = 'Yellow' }
+        @{ Kind = 'Repair';      Title = 'REPAIR & RESTORE';                       Color = 'Yellow' },
+        @{ Kind = 'WinUtil';     Title = 'WINUTIL (Chris Titus Tech)  - each opens its own menu'; Color = 'Magenta' }
     )
     foreach ($sec in $sections) {
         Write-Host ''
@@ -225,9 +231,10 @@ function Invoke-Batch {
         $how = switch ($it.Kind) {
             'Recommended' { 'runs automatically' }
             'Optional'    { if ($it.Run.ToString() -match 'Menu') { 'opens its menu - press B when done' } else { 'you pick what to apply' } }
+            'WinUtil'     { 'opens its menu - press B when done' }
             default       { 'asks before changing anything' }
         }
-        $col = switch ($it.Kind) { 'Recommended' { 'Green' } 'Optional' { 'Cyan' } default { 'Yellow' } }
+        $col = switch ($it.Kind) { 'Recommended' { 'Green' } 'Optional' { 'Cyan' } 'WinUtil' { 'Magenta' } default { 'Yellow' } }
         Write-Host ("   {0,3}  {1}" -f $it.Key, $it.Label) -ForegroundColor $col
         Write-Host "         ($how)" -ForegroundColor DarkGray
     }
@@ -358,6 +365,7 @@ while ($true) {
         if (-not (Confirm-Action $q)) { continue }
     }
     Invoke-MenuItem -Item $item
-    if ($item.Kind -ne 'Optional' -or ($script:Stats.OK + $script:Stats.FAIL + $script:Stats.DRY) -gt 0) { Show-Stats }
+    # WinUtil menus show their own results after each action
+    if ($item.Kind -ne 'WinUtil' -and ($item.Kind -ne 'Optional' -or ($script:Stats.OK + $script:Stats.FAIL + $script:Stats.DRY) -gt 0)) { Show-Stats }
     if ($item.Run.ToString() -notmatch 'Menu') { Wait-Key }
 }

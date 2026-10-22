@@ -316,8 +316,8 @@ function Remove-RegValueRaw {
     # .NET delete - also handles the (default) value, which Remove-ItemProperty can't
     param([string]$Path, [string]$Name)
     $Path = Convert-RegPath $Path
-    if ($Path -notmatch '^(HKLM|HKCU):\\(.+)$') { return }
-    $base = if ($Matches[1] -eq 'HKLM') { [Microsoft.Win32.Registry]::LocalMachine } else { [Microsoft.Win32.Registry]::CurrentUser }
+    if ($Path -notmatch '^(HKLM|HKCU|HKU):\\(.+)$') { return }
+    $base = switch ($Matches[1]) { 'HKLM' { [Microsoft.Win32.Registry]::LocalMachine } 'HKU' { [Microsoft.Win32.Registry]::Users } default { [Microsoft.Win32.Registry]::CurrentUser } }
     $k = $base.OpenSubKey($Matches[2], $true)
     if ($k) { try { $k.DeleteValue($Name, $false) } finally { $k.Close() } }
 }

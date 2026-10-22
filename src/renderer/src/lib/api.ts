@@ -104,7 +104,8 @@ function createPreviewApi(): BuddyApi {
       onExit: (cb) => on('exit', cb)
     },
     win: { minimize() {}, maximize() {}, close() {}, onMaximized: () => () => {} },
-    app: { openExternal() {}, openLogs() {}, copyText(text) { navigator.clipboard?.writeText(text).catch(() => {}) }, relaunch() {}, reboot: async () => {}, checkUpdates: async () => {}, updateStatus: async () => ({ state: 'idle' }), installUpdate() {}, onUpdate: () => () => {}, testNotification() {} }
+    app: { openExternal() {}, openLogs() {}, copyText(text) { navigator.clipboard?.writeText(text).catch(() => {}) }, relaunch() {}, reboot: async () => {}, checkUpdates: async () => {}, updateStatus: async () => ({ state: 'idle' }), installUpdate() {}, onUpdate: () => () => {}, testNotification() {},
+      openPanel() {}, pickIso: async () => 'D:\\ISO\\Win11_25H2_English_x64.iso', saveIsoAs: async () => 'C:\\Users\\you\\Desktop\\Win11_Buddy.iso', exportList: async () => true, importList: async () => null }
   }
 }
 

@@ -3,6 +3,8 @@
 ::  itzBuddy Optimization Suite - launcher
 ::  Double-click this file. It asks for admin rights and starts
 ::  the interactive menu (itzBuddy.ps1) with the right settings.
+::  Options 20-23 are the WinUtil sections (tweaks, apps, system
+::  tools, Windows 11 ISO); they need the winutil\ folder next to it.
 :: ============================================================
 setlocal
 title itzBuddy Optimization Suite

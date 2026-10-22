@@ -41,6 +41,17 @@ Purple Void edition · Windows 10 / 11 · x64 · <a href="https://itzbuddyyy.git
 
 Resolution, monitor, refresh rate, audio devices, sensitivity and key binds are never touched. Only keys that already exist in the file are changed, each value is checked against what the game allows, and nothing is written while the game is running. The file is backed up first and **Restore** puts it back exactly. Optionally, the game can be forced onto the dedicated GPU (laptops and dual-GPU PCs) or given high CPU priority. Game files and memory are never modified.
 
+**Everything from WinUtil** (Chris Titus Tech, MIT), regrouped into Buddy's own categories:
+
+| Section | What it does |
+|---|---|
+| **Tweaks** | All 64 WinUtil tweaks and toggles in 8 categories (privacy, performance, clean-up, bloat, Start/taskbar/Explorer, appearance, network, system), Minimal / Standard / Advanced presets, detection of what is already applied, per-tweak Undo, DNS providers with a latency test, Ultimate Performance plan, O&O ShutUp10++ |
+| **Apps** | 239 apps in 12 categories, installed, updated or removed with WinGet or Chocolatey; Update all; detection of installed apps; import/export of selections (also reads WinUtil exports) |
+| **System** | Windows features (Hyper-V, WSL, Sandbox, .NET…), repairs (CHKDSK/SFC/DISM, Windows Update reset, network reset, NTP, WinGet, AutoLogon), Windows Update policy (default / security only / off), Microsoft Store apps, classic control panels, OpenSSH server, CTT PowerShell profile |
+| **Windows ISO** | Win11 Creator: verify an official ISO, add the unattended answer file (and optionally this PC's drivers), then save a new ISO or write a bootable USB drive |
+
+Registry and service changes made by WinUtil tweaks go through the same undo journal as the rest of the app. Downloads (O&O ShutUp10++, AutoLogon) are only started when their Authenticode signature is valid.
+
 **Tools:** Debloat, startup apps, look & feel, GPU (NVIDIA profile, AMD Adrenalin, driver pages), timer resolution, and advanced switches that each show their trade-off.
 
 **Undo everything.** Every registry value, service start type and command is recorded before it changes. Any session can be rolled back from **Optimize → Repair**.
@@ -95,6 +106,7 @@ npm run build:native   # BuddyMonitor.exe
 npm run build:icons    # icon.ico, installer artwork (from the vector masters)
 npm run dev            # run the app
 npm run dist           # build release/Buddy-Optimizer-Setup-<version>.exe
+npm test               # typecheck + list parser test + engine dry-run test (run without admin rights)
 ```
 
 You can preview the interface in a browser with simulated data: `npx vite --config vite.preview.config.ts`
@@ -114,6 +126,7 @@ You can preview the interface in a browser with simulated data: `npx vite --conf
 | `src/renderer` | The interface: views, components, design tokens, translations |
 | `native/BuddyMonitor` | C# hardware monitor helper |
 | `engine` | itzBuddy optimization engine (PowerShell), also usable on its own via `itzBuddy.cmd` |
+| `engine/winutil` | Vendored WinUtil functions and catalogs (MIT); `engine/modules/WinUtil.ps1` runs them headless |
 | `scripts` | Icon generator (pure vector geometry) and asset build |
 | `build` | Icons, installer artwork, NSIS hooks |
 

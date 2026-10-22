@@ -148,7 +148,6 @@ function Set-Wallpaper {
     # SPI_SETDESKWALLPAPER = 0x14, update ini + broadcast
     if ([itzBuddy.Native]::SystemParametersInfoW(0x0014, 0, $dest, 0x03)) { Write-OK 'Wallpaper applied' }
     else { Write-Fail 'Wallpaper could not be applied' }
-    if ($old) { Add-JournalCommand -Description 'Wallpaper' -UndoCommand "reg add `"HKCU\Control Panel\Desktop`" /v WallPaper /t REG_SZ /d `"$old`" /f" }
 }
 
 function Invoke-UITweaks {

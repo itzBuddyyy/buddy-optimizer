@@ -15,6 +15,7 @@ Buddy Optimizer includes or depends on the following components.
 | [LibreHardwareMonitorLib](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) 0.9.6 | MPL-2.0 | GPU / storage sensors (unmodified binary) |
 | HidSharp, DiskInfoToolkit, RAMSPDToolkit, BlackSharp.Core | See each package | Dependencies of LibreHardwareMonitorLib |
 | [NVIDIA Profile Inspector](https://github.com/Orbmu2k/nvidiaProfileInspector) (`engine/files/Inspector.exe`) | MIT | Imports the optional NVIDIA profile |
+| [WinUtil](https://github.com/ChrisTitusTech/winutil) by Chris Titus Tech (`engine/winutil/`) | MIT (`engine/winutil/LICENSE`) | Tweaks, app catalog, features, fixes, update policies, DNS and the Win11 Creator. Upstream commit in `engine/winutil/UPSTREAM` |
 | Microsoft Visual C++ 2010 Redistributable (`engine/files/Vs2010*.exe`) | Microsoft redistributable terms | Runtime needed by the timer-resolution service |
 
 ## Need verification before commercial distribution

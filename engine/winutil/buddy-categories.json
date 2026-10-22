@@ -1,0 +1,57 @@
+{
+  "_comment": "Buddy's own grouping of the WinUtil catalogs. Shared by the app (src/renderer/src/lib/winutil.ts) and the console menu (engine/modules/WinUtil.ps1).",
+  "tweakCats": {
+    "privacy": "Privacy & telemetry",
+    "performance": "Performance",
+    "cleanup": "Clean-up & safety",
+    "bloat": "Bloat & preinstalled software",
+    "shell": "Start, taskbar & Explorer",
+    "appearance": "Appearance & sign-in",
+    "network": "Network",
+    "system": "System & security"
+  },
+  "tweaks": {
+    "WPFTweaksActivity": "privacy", "WPFTweaksLocation": "privacy", "WPFTweaksTelemetry": "privacy", "WPFTweaksConsumerFeatures": "privacy",
+    "WPFTweaksDeliveryOptimization": "privacy", "WPFTweaksDisableStoreSearch": "privacy", "WPFTweaksWindowsAI": "privacy",
+    "WPFTweaksPreventDeviceMetadataFromNetwork": "privacy", "WPFToggleBingSearch": "privacy", "WPFTweaksDisableNotifications": "privacy",
+    "WPFTweaksServices": "performance", "WPFTweaksHiber": "performance", "WPFTweaksDisplay": "performance", "WPFTweaksSvcHostSplitting": "performance",
+    "WPFTweaksReservedStorage": "performance", "WPFTweaksStorage": "performance", "WPFTweaksDisableBGapps": "performance", "WPFToggleGameMode": "performance",
+    "WPFMultiplaneOverlay": "performance", "WPFToggleMouseAcceleration": "performance",
+    "WPFTweaksRestorePoint": "cleanup", "WPFTweaksDiskCleanup": "cleanup", "WPFTweaksDeleteTempFiles": "cleanup",
+    "WPFTweaksWidget": "bloat", "WPFTweaksRemoveEdge": "bloat", "WPFTweaksRemoveOneDrive": "bloat", "WPFTweaksEdgeDebloat": "bloat", "WPFTweaksBraveDebloat": "bloat",
+    "WPFTweaksRazerBlock": "bloat", "WPFTweaksLogiBlock": "bloat", "WPFTweaksBlockAdobeNet": "bloat", "WPFToggleNewOutlook": "bloat",
+    "WPFTweaksRevertStartMenu": "shell", "WPFTweaksEndTaskOnTaskbar": "shell", "WPFTweaksRightClickMenu": "shell", "WPFTweaksDisableExplorerAutoDiscovery": "shell",
+    "WPFTweaksRemoveHomeAndGallery": "shell", "WPFToggleShowExt": "shell", "WPFToggleHiddenFiles": "shell", "WPFToggleTaskbarAlignment": "shell",
+    "WPFToggleTaskbarSearch": "shell", "WPFToggleTaskView": "shell", "WPFToggleHideSettingsHome": "shell", "WPFToggleStartMenuRecommendations": "shell",
+    "WPFToggleScrollbars": "shell", "WPFToggleWindowSnapping": "shell",
+    "WPFToggleDarkMode": "appearance", "WPFToggleLoginBlur": "appearance", "WPFToggleDisableLockscreen": "appearance", "WPFToggleStickyKeys": "appearance",
+    "WPFToggleNumLock": "appearance", "WPFToggleBatteryPercentage": "appearance", "WPFToggleDetailedBSoD": "appearance", "WPFToggleVerboseLogon": "appearance",
+    "WPFTweaksIPv46": "network", "WPFTweaksTeredo": "network", "WPFTweaksDisableIPv6": "network",
+    "WPFTweaksDisableBitLocker": "system", "WPFTweaksUTC": "system", "WPFTweaksDisableWarningForUnsignedRdp": "system", "WPFTweaksWPBT": "system",
+    "WPFToggleLongPaths": "system", "WPFToggleS3Sleep": "system", "WPFToggleStandbyFix": "system"
+  },
+  "appCats": {
+    "browsers": "Browsers",
+    "communication": "Communication",
+    "gaming": "Gaming",
+    "hardware": "Hardware & drivers",
+    "security": "Passwords & VPN",
+    "network": "Network & remote",
+    "media": "Media & creative",
+    "office": "Office & documents",
+    "development": "Development",
+    "microsoft": "Microsoft & runtimes",
+    "selfhosted": "Self-hosted & streaming",
+    "utilities": "System utilities"
+  },
+  "appFromWinUtil": {
+    "Browsers": "browsers", "Communications": "communication", "Games": "gaming", "Multimedia Tools": "media", "Document": "office",
+    "Development": "development", "Microsoft Tools": "microsoft", "Selfhosted Tools": "selfhosted", "Utilities": "utilities", "Pro Tools": "utilities"
+  },
+  "appMoves": {
+    "gaming": ["msiafterburner", "processlasso", "parsec", "moonlight", "sunshine", "blurautoclicker", "OPAutoClicker"],
+    "hardware": ["cpuz", "gpuz", "hwinfo", "hwmonitor", "ddu", "nvclean", "sdio", "crystaldiskinfo", "crystaldiskmark", "cinebenchr23", "openrgb", "signalrgb", "minitoolpartitionwizard", "rufus", "ventoy"],
+    "security": ["1password", "bitwarden", "keepassxc", "enteauth", "protonauth", "protonpass", "mullvadvpn", "protonvpn", "wireguard", "OpenVPN", "tailscale", "CloudflareWARP", "simplewall", "netbird"],
+    "network": ["advancedip", "angryipscanner", "nmap", "putty", "winscp", "wireshark", "tightvnc", "anydesk", "teamviewer", "deskflow", "localsend", "qbittorrent", "internetdownloadmanager", "abdownloadmanager"]
+  }
+}

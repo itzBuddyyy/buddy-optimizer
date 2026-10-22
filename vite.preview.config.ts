@@ -9,7 +9,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   root: resolve(here, 'src/renderer'),
-  resolve: { alias: { '@shared': resolve(here, 'src/shared'), '@': resolve(here, 'src/renderer/src') } },
+  resolve: { alias: { '@shared': resolve(here, 'src/shared'), '@winutil': resolve(here, 'engine/winutil'), '@': resolve(here, 'src/renderer/src') } },
   plugins: [react()],
   server: { port: 5199, strictPort: true }
 })

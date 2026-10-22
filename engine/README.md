@@ -1,4 +1,4 @@
-# itzBuddy Optimization Suite v3.0
+# itzBuddy Optimization Suite v3.1
 
 An interactive optimizer for competitive gaming on Windows 10/11.
 **Run it:** extract the whole folder, then double-click `itzBuddy.cmd`. It asks for admin rights.
@@ -28,6 +28,10 @@ dry run, which shows every change without applying anything.
 | 16 | Restore default power plans | repair | `RestorePowerPlans.ps1` |
 | 17 | Deep network reset | repair | new |
 | 18-19 | Undo session · Restore point | repair | new (replaces the suite's "restore helper") |
+| 20 | WinUtil tweaks: 64 tweaks in 8 categories, Minimal/Standard/Advanced presets, apply or undo | own menu | WinUtil (Chris Titus Tech, MIT) |
+| 21 | WinUtil apps: 239 apps in 12 categories, search, install/remove, update all (WinGet or Chocolatey) | own menu | WinUtil |
+| 22 | WinUtil system tools: features, repairs, Windows Update policy, Store apps, control panels, DNS, Ultimate Performance, O&O ShutUp10++, OpenSSH, PowerShell profile | own menu | WinUtil |
+| 23 | Windows 11 ISO creator: unattended ISO or bootable USB (type ERASE to confirm the USB) | own menu | WinUtil Win11 Creator |
 
 **Running several actions at once:** type more than one number at the `Select` prompt, for example `1 8 9`,
 `1,8,9` or `3-6 10`. You get a list of the queue and confirm once. Recommended items then run without asking
@@ -100,6 +104,7 @@ While it's on, nothing that Xbox, Game Pass or Microsoft Store needs gets disabl
 itzBuddy.cmd        launcher (admin + execution policy)
 itzBuddy.ps1        menu
 lib\Core.ps1        logging, prompts, detection, undo journal
-modules\*.ps1       one file per section
+modules\*.ps1       one file per section (WinUtil.ps1 = options 20-23 and the app's WinUtil screens)
+winutil\           vendored WinUtil functions + catalogs (MIT), buddy-categories.json
 files\              Power.pow, Inspector.exe/.nip, STR.exe, VC++ 2010, Wallpaper.png
 ```

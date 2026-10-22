@@ -15,6 +15,7 @@
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["src/shared/*"],
+      "@winutil/*": ["engine/winutil/*"],
       "@/*": ["src/renderer/src/*"]
     }
   },

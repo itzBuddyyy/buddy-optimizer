@@ -8,13 +8,16 @@
       agent -> app   {"type":"log","id":7,"level":"ok","text":"..."}
                      {"type":"result","id":7,"ok":true,"data":...,"stats":{...},"reboot":true}
 
-    The first message must carry the one-time token the app passed on the
-    command line, otherwise the agent exits. Every action reuses the console
+    The agent first sends its one-time proof; the app's first message must then
+    carry the one-time token (both passed on the command line), otherwise the
+    agent exits. Every action reuses the console
     suite's modules, so behaviour, journaling and undo are identical.
 #>
 param(
     [Parameter(Mandatory)][string]$PipeName,
-    [Parameter(Mandatory)][string]$Token
+    [Parameter(Mandatory)][string]$Token,
+    [Parameter(Mandatory)][string]$Proof,
+    [Parameter(Mandatory)][int]$AppPid
 )
 
 $ErrorActionPreference = 'Continue'
@@ -30,6 +33,11 @@ foreach ($m in Get-ChildItem -LiteralPath (Join-Path $script:Root 'modules') -Fi
 # ---- pipe ----
 $pipe = New-Object System.IO.Pipes.NamedPipeClientStream('.', $PipeName, [System.IO.Pipes.PipeDirection]::InOut)
 try { $pipe.Connect(15000) } catch { exit 2 }
+# The secrets travel on a command line that same-user processes can read, so also
+# require that the pipe server is the app process that launched us.
+Add-Type -Namespace itzBuddy -Name PipeInfo -MemberDefinition '[DllImport("kernel32.dll", SetLastError = true)] public static extern bool GetNamedPipeServerProcessId(Microsoft.Win32.SafeHandles.SafePipeHandle pipe, out uint pid);'
+$serverPid = [uint32]0
+if (-not [itzBuddy.PipeInfo]::GetNamedPipeServerProcessId($pipe.SafePipeHandle, [ref]$serverPid) -or $serverPid -ne $AppPid) { exit 6 }
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 $reader = New-Object System.IO.StreamReader($pipe, $utf8)
 $writer = New-Object System.IO.StreamWriter($pipe, $utf8)
@@ -55,7 +63,8 @@ function Write-Host { param([Parameter(Position = 0, ValueFromRemainingArguments
     $t = ($Object -join ' ').Trim(); if ($t) { Send-Log 'text' $t } }
 $script:AutoYes = $true
 
-# ---- auth handshake ----
+# ---- auth handshake: prove ourselves first, then check the app's token ----
+try { $writer.WriteLine((@{ proof = $Proof } | ConvertTo-Json -Compress)) } catch { exit 3 }
 $hello = $null
 try { $hello = $reader.ReadLine() | ConvertFrom-Json } catch { }
 if (-not $hello -or $hello.token -ne $Token) { exit 4 }
@@ -134,6 +143,21 @@ function Invoke-Action([string]$action, $a) {
         'gameOptimize' { Invoke-GameOptimize -Game ([string]$a.game) -Options $a.options }
         'gameRestore'  { Restore-GameSettings -Game ([string]$a.game) }
         'undo'         { Undo-SessionFile -Path (Join-Path $script:BackupDir ([IO.Path]::GetFileName([string]$a.file))) }
+        # ---- WinUtil ----
+        'wuTweaks'     { $null = & { foreach ($k in @($a.keys)) { Invoke-BuddyTweak -Key ([string]$k) -Undo:([bool]$a.undo) }; Save-Journal } }
+        'wuApps'       { $null = & { Invoke-BuddyApps -Action ([string]$a.action) -Keys @($a.keys) -Manager ([string]$a.manager) } }
+        'wuUpgradeAll' { $null = & { Invoke-BuddyUpgradeAll -Manager ([string]$a.manager) } }
+        'wuAppx'       { $null = & { Invoke-BuddyAppx -Action ([string]$a.action) -Keys @($a.keys) } }
+        'wuFeatures'   { $null = & { Invoke-BuddyFeatures -Keys @($a.keys) } }
+        'wuFix'        { $null = & { Invoke-BuddyFix -Id ([string]$a.id) } }
+        'wuUpdates'    { $null = & { Set-BuddyUpdatePolicy -Mode ([string]$a.mode) } }
+        'wuDns'        { $null = & { Set-BuddyDns -Provider ([string]$a.provider) } }
+        'wuExtra'      { $null = & { Invoke-BuddyExtra -Id ([string]$a.id) } }
+        'isoVerify'    { return (Invoke-BuddyIsoVerify -Path ([string]$a.path)) }
+        'isoModify'    { return (Invoke-BuddyIsoModify -Index ([int]$a.index) -InjectDrivers ([bool]$a.drivers)) }
+        'isoExport'    { $null = & { Invoke-BuddyIsoExport -Output ([string]$a.output) } }
+        'isoUsb'       { $null = & { Invoke-BuddyIsoUsb -Disk ([int]$a.disk) } }
+        'isoReset'     { $null = & { Invoke-BuddyIsoReset } }
         default        { throw "Unknown action: $action" }
     }
 }
@@ -147,6 +171,14 @@ function Invoke-Query([string]$what) {
         'timer'    { $s = Get-StrService; return [ordered]@{ installed = [bool]$s; state = if ($s) { [string]$s.State } else { $null } } }
         'power'    { return [ordered]@{ active = (Get-ActivePlanGuid); plans = @(Get-PowerPlans) } }
         'games'    { return @(Get-GamesState) }
+        'wuTweakState'      { return @(Get-BuddyTweakState) }
+        'wuInstalled:winget' { return @(Get-BuddyInstalledApps 'winget') }
+        'wuInstalled:choco'  { return @(Get-BuddyInstalledApps 'choco') }
+        'wuPm'     { return [ordered]@{ winget = (Test-WinUtilPackageManager -winget) -eq 'installed'; choco = (Test-WinUtilPackageManager -choco) -eq 'installed' } }
+        'wuAppx'   { return @(Get-WinUtilInstalledAPPX) }
+        'wuDnsBench' { return @(Get-WinUtilDNSBenchmark | ForEach-Object { [ordered]@{ provider = $_.Provider; ip = $_.PrimaryIP; ms = $_.LatencyMs } }) }
+        'isoState' { return (Get-BuddyIsoState) }
+        'isoUsb'   { return @(Get-BuddyUsbDisks) }
         default    { throw "Unknown query: $what" }
     }
 }

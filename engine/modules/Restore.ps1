@@ -26,7 +26,17 @@ function Restore-JournalEntry {
             }
         }
         'File' { Restore-GameFileEntry $e }
+        'Tweak' {
+            # replays the UndoScript bundled with the app for this key; journals never carry script text
+            $t = $sync.configs.tweaks.PSObject.Properties[[string]$e.Key]
+            if (-not $t) { throw "unknown tweak: $($e.Key)" }
+            foreach ($s in @($t.Value.UndoScript)) { if ($s) { Invoke-Command -ScriptBlock ([scriptblock]::Create($s)) -ErrorAction Stop } }
+        }
         'Cmd' {
+            # only the undo commands this suite writes itself may run elevated
+            if ([string]$e.Undo -notmatch '^(bcdedit /deletevalue \w+|powercfg /(hibernate (on|off)|setactive [0-9a-fA-F-]{36})|schtasks /Change /TN "[^"&|<>^]+" /Enable|powershell -NoProfile -Command "Set-NetAdapterAdvancedProperty -Name ''[^''"&|<>^]+'' -RegistryKeyword ''[\w*]+'' -RegistryValue ''[\w.-]*''"|"[A-Za-z]:\\Program Files\\itzBuddy\\STR\.exe" -uninstall)$') {
+                throw "refused unexpected undo command: $($e.Undo)"
+            }
             $p = Start-Process -FilePath 'cmd.exe' -ArgumentList "/c $($e.Undo)" -Wait -PassThru -WindowStyle Hidden
             if ($p.ExitCode -ne 0) { throw "exit code $($p.ExitCode): $($e.Undo)" }
         }

@@ -1,0 +1,2 @@
+2f0bdc8fca52e1ebe31a8d98216428061d3f8956 Wed Oct 21 16:46:58 2026 -0500
+Normalized tweaks.json and feature.json to strict JSON (script strings had raw newlines); content unchanged.

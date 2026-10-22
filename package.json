@@ -1,7 +1,7 @@
 {
   "name": "buddy-optimizer",
   "productName": "Buddy Optimizer",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Premium Windows optimizer and real-time performance monitor for competitive gaming.",
   "author": "itzBuddy",
   "license": "MIT",
@@ -18,7 +18,10 @@
     "dist": "npm run build:native && npm run build:icons && electron-vite build && electron-builder --win --x64",
     "dist:dir": "npm run build:native && electron-vite build && electron-builder --win --x64 --dir",
     "release": "npm run build:native && npm run build:icons && electron-vite build && electron-builder --win --x64 --publish always",
-    "test:smoke": "node scripts/smoke.mjs"
+    "test:smoke": "node scripts/smoke.mjs",
+    "test:engine": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/engine-dryrun.test.ps1",
+    "test:lists": "node scripts/lists.test.mts",
+    "test": "npm run typecheck && npm run test:lists && npm run test:engine"
   },
   "dependencies": {
     "electron-updater": "^6.8.9"

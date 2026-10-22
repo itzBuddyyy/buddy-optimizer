@@ -44,6 +44,10 @@ export interface Settings {
     dryRun: boolean
     restorePointFirst: boolean
   }
+
+  apps: {
+    manager: 'winget' | 'choco'
+  }
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -66,7 +70,8 @@ export const DEFAULT_SETTINGS: Settings = {
   pingHost: '1.1.1.1',
   notifications: { enabled: true, onComplete: true, gpuTemp: 85, cpuLoad: 0, ramLoad: 90, ping: 0 },
   security: { autoLockMinutes: 0 },
-  engine: { xboxMode: 'auto', dryRun: false, restorePointFirst: true }
+  engine: { xboxMode: 'auto', dryRun: false, restorePointFirst: true },
+  apps: { manager: 'winget' }
 }
 
 // ---- monitor payloads (emitted by BuddyMonitor.exe) ----
@@ -167,6 +172,13 @@ export interface BuddyApi {
     installUpdate(): void
     onUpdate(cb: (u: UpdateStatus) => void): () => void
     testNotification(): void
+    /** opens a whitelisted Windows applet (Control Panel, Device Manager...) as the normal user */
+    openPanel(id: string): void
+    /** native file dialogs; null when cancelled */
+    pickIso(): Promise<string | null>
+    saveIsoAs(): Promise<string | null>
+    exportList(kind: 'apps' | 'tweaks', keys: string[]): Promise<boolean>
+    importList(kind: 'apps' | 'tweaks'): Promise<string[] | null>
   }
 }
 

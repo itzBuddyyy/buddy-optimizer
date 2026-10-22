@@ -10,6 +10,10 @@ import { Lock } from '@/views/Lock'
 import { Dashboard } from '@/views/Dashboard'
 import { Optimize } from '@/views/Optimize'
 import { Games } from '@/views/Games'
+import { Tweaks } from '@/views/Tweaks'
+import { Apps } from '@/views/Apps'
+import { SystemTools } from '@/views/SystemTools'
+import { IsoCreator } from '@/views/IsoCreator'
 import { SettingsView } from '@/views/Settings'
 import { useT } from '@/i18n'
 
@@ -20,8 +24,8 @@ function Shell() {
   const contentRef = useRef<HTMLElement>(null)
   // each section starts at the top (like switching panes in System Settings)
   useEffect(() => { contentRef.current?.scrollTo({ top: 0 }) }, [view])
-  const titles: Record<View, string> = { dashboard: t('nav.dashboard'), optimize: t('nav.optimize'), games: t('nav.games'), settings: t('nav.settings') }
-  // keyboard: Ctrl+1..4 switch sections, Ctrl+L locks
+  const titles: Record<View, string> = { dashboard: t('nav.dashboard'), optimize: t('nav.optimize'), tweaks: t('nav.tweaks'), apps: t('nav.apps'), games: t('nav.games'), system: t('nav.system'), iso: t('nav.iso'), settings: t('nav.settings') }
+  // keyboard: Ctrl+1..8 switch sections, Ctrl+L locks
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!e.ctrlKey) return
@@ -29,6 +33,10 @@ function Shell() {
       else if (e.key === '2') setView('optimize')
       else if (e.key === '3') setView('games')
       else if (e.key === '4' || e.key === ',') setView('settings')
+      else if (e.key === '5') setView('tweaks')
+      else if (e.key === '6') setView('apps')
+      else if (e.key === '7') setView('system')
+      else if (e.key === '8') setView('iso')
       else if (e.key.toLowerCase() === 'l') api.auth.lock()
       else return
       e.preventDefault()
@@ -44,7 +52,11 @@ function Shell() {
         <AnimatePresence mode="wait">
           {view === 'dashboard' && <Dashboard key="d" />}
           {view === 'optimize' && <Optimize key="o" />}
+          {view === 'tweaks' && <Tweaks key="t" />}
+          {view === 'apps' && <Apps key="a" />}
           {view === 'games' && <Games key="g" />}
+          {view === 'system' && <SystemTools key="y" />}
+          {view === 'iso' && <IsoCreator key="i" />}
           {view === 'settings' && <SettingsView key="s" />}
         </AnimatePresence>
       </main>

@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
-import { Gamepad2, Gauge, Lock, Minus, Settings as Cog, Sparkles, Square, X, Copy } from 'lucide-react'
+import { Disc3, Gamepad2, Gauge, LayoutGrid, Lock, Minus, MonitorCog, Settings as Cog, SlidersHorizontal, Sparkles, Square, X, Copy } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useSettings } from '@/lib/store'
 import { spring } from '@/lib/motion'
@@ -45,12 +45,16 @@ export function TitleBar({ title }: { title?: string }) {
   )
 }
 
-export type View = 'dashboard' | 'optimize' | 'games' | 'settings'
+export type View = 'dashboard' | 'optimize' | 'tweaks' | 'apps' | 'games' | 'system' | 'iso' | 'settings'
 
 const items: { id: View; icon: typeof Gauge; label: TKey }[] = [
   { id: 'dashboard', icon: Gauge, label: 'nav.dashboard' },
   { id: 'optimize', icon: Sparkles, label: 'nav.optimize' },
+  { id: 'tweaks', icon: SlidersHorizontal, label: 'nav.tweaks' },
+  { id: 'apps', icon: LayoutGrid, label: 'nav.apps' },
   { id: 'games', icon: Gamepad2, label: 'nav.games' },
+  { id: 'system', icon: MonitorCog, label: 'nav.system' },
+  { id: 'iso', icon: Disc3, label: 'nav.iso' },
   { id: 'settings', icon: Cog, label: 'nav.settings' }
 ]
 

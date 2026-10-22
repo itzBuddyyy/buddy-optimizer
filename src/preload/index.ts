@@ -54,7 +54,12 @@ const api: BuddyApi = {
     updateStatus: () => ipcRenderer.invoke('app:updateStatus'),
     installUpdate: () => ipcRenderer.send('app:installUpdate'),
     onUpdate: (cb) => on('update:status', cb),
-    testNotification: () => ipcRenderer.send('app:testNotification')
+    testNotification: () => ipcRenderer.send('app:testNotification'),
+    openPanel: (id) => ipcRenderer.send('app:openPanel', id),
+    pickIso: () => ipcRenderer.invoke('dialog:pickIso'),
+    saveIsoAs: () => ipcRenderer.invoke('dialog:saveIso'),
+    exportList: (kind, keys) => ipcRenderer.invoke('dialog:exportList', kind, keys),
+    importList: (kind) => ipcRenderer.invoke('dialog:importList', kind)
   }
 }
 

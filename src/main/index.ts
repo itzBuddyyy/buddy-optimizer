@@ -1,6 +1,9 @@
-import { app, BrowserWindow, clipboard, ipcMain, Menu, nativeTheme, Notification, powerMonitor, session, shell, Tray } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, nativeTheme, Notification, powerMonitor, session, shell, Tray } from 'electron'
 import { spawn } from 'node:child_process'
+import { readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import appsCatalog from '@winutil/config/applications.json'
+import tweaksCatalog from '@winutil/config/tweaks.json'
 import { loadSettings, saveSettings } from './settings'
 import { changePassword, isOwner, isUnlocked, lock, unlock } from './auth'
 import { Monitor } from './monitor'
@@ -8,6 +11,7 @@ import { Engine } from './engine'
 import { evaluateAlerts } from './alerts'
 import { resource } from './paths'
 import { t } from './i18n'
+import { KEY_RE, listFromJson } from './lists'
 import type { DeepPartial, Settings, UpdateStatus } from '@shared/types'
 
 const APP_ID = 'com.itzbuddy.buddyoptimizer'
@@ -260,6 +264,19 @@ function notifyUpdateReady(version: string) {
   n.show()
 }
 
+// ---- WinUtil helpers ----
+let pickedIso: string | null = null
+let savedIso: string | null = null
+const catalogLinks = new Set<string>([...Object.values(appsCatalog as Record<string, { link?: string }>), ...Object.values(tweaksCatalog as Record<string, { link?: string }>)]
+  .map((v) => v?.link).filter((l): l is string => typeof l === 'string' && l.startsWith('https://')))
+
+// Windows applets, always started from System32 as the signed-in user
+const PANELS: Record<string, [string, string[]]> = {
+  computer: ['mmc.exe', ['compmgmt.msc']], control: ['control.exe', []], mouse: ['control.exe', ['main.cpl']], network: ['control.exe', ['ncpa.cpl']],
+  power: ['control.exe', ['powercfg.cpl']], printers: ['explorer.exe', ['shell:::{A8A91A66-3A7D-4424-8D24-04E180695C7A}']], programs: ['control.exe', ['appwiz.cpl']],
+  region: ['control.exe', ['intl.cpl']], security: ['control.exe', ['wscui.cpl']], sound: ['control.exe', ['mmsys.cpl']], system: ['control.exe', ['sysdm.cpl']],
+  time: ['control.exe', ['timedate.cpl']], firewall: ['control.exe', ['firewall.cpl']], restore: ['rstrui.exe', []]
+}
 // ---- IPC ----
 function guard<T extends unknown[], R>(fn: (...a: T) => R) {
   // everything except unlock/settings-read requires the app to be unlocked
@@ -301,6 +318,10 @@ function registerIpc() {
     const xbox = s.engine.xboxMode === 'auto' ? null : s.engine.xboxMode === 'on'
     const dry = opts.dryRun ?? s.engine.dryRun
     if (action === 'quick' && !s.engine.restorePointFirst) args = { ...args, skipRestorePoint: true }
+    // ISO paths reach the elevated agent only if the user picked them in our own file dialogs
+    if ((action === 'isoVerify' && (!pickedIso || args.path !== pickedIso)) || (action === 'isoExport' && (!savedIso || args.output !== savedIso))) {
+      return { id: 0, ok: false, error: 'path not chosen in the file dialog', data: null, stats: { ok: 0, skip: 0, fail: 0, dry: 0 }, reboot: false, journal: null }
+    }
     const res = await engine.run(action, args, dry, xbox)
     const longRunning = ['quick', 'gaming', 'services', 'privacy', 'cleanup', 'debloat', 'ui', 'xboxFix'].includes(action)
     if (longRunning && !dry && s.notifications.enabled && s.notifications.onComplete && Notification.isSupported() && (!win?.isFocused())) {
@@ -323,10 +344,43 @@ function registerIpc() {
   ipcMain.on('win:close', () => win?.close())
 
   ipcMain.on('app:openExternal', (_e, url: string) => {
-    // only known https destinations
+    if (!isUnlocked()) return
+    // only known https destinations: our own pages plus the links in the bundled WinUtil catalogs
     const allowed = [GITHUB_URL, 'https://www.amd.com/', 'https://www.nvidia.com/', 'https://www.intel.com/']
-    if (typeof url === 'string' && allowed.some((a) => url.startsWith(a))) shell.openExternal(url)
+    if (typeof url === 'string' && /^https:\/\//.test(url) && (allowed.some((a) => url.startsWith(a)) || catalogLinks.has(url))) shell.openExternal(url)
   })
+  ipcMain.on('app:openPanel', (_e, id: unknown) => {
+    if (!isUnlocked() || typeof id !== 'string' || !(id in PANELS)) return
+    const [exe, args] = PANELS[id]
+    const sys32 = join(process.env.SystemRoot ?? 'C:\\Windows', 'System32')
+    // System Restore needs admin: ShellExecute shows the UAC prompt, spawn cannot
+    if (exe === 'rstrui.exe') shell.openPath(join(sys32, exe))
+    else spawn(exe === 'explorer.exe' ? join(sys32, '..', exe) : join(sys32, exe), args, { detached: true, windowsHide: false }).on('error', () => {})
+  })
+  ipcMain.handle('dialog:pickIso', guard(async () => {
+    const r = await dialog.showOpenDialog(win!, { title: 'Windows 11 ISO', filters: [{ name: 'ISO', extensions: ['iso'] }], properties: ['openFile'] })
+    pickedIso = r.canceled ? pickedIso : r.filePaths[0] ?? null
+    return r.canceled ? null : pickedIso
+  }))
+  ipcMain.handle('dialog:saveIso', guard(async () => {
+    const d = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+    const r = await dialog.showSaveDialog(win!, { title: 'Save ISO', defaultPath: join(app.getPath('desktop'), `Win11_Buddy_${d}.iso`), filters: [{ name: 'ISO', extensions: ['iso'] }] })
+    savedIso = r.canceled ? savedIso : r.filePath ?? null
+    return r.canceled ? null : savedIso
+  }))
+  ipcMain.handle('dialog:exportList', guard(async (kind: unknown, keys: unknown) => {
+    if ((kind !== 'apps' && kind !== 'tweaks') || !Array.isArray(keys) || keys.length > 2000 || !keys.every((k) => typeof k === 'string' && KEY_RE.test(k))) return false
+    const r = await dialog.showSaveDialog(win!, { defaultPath: join(app.getPath('documents'), `buddy-${kind}.json`), filters: [{ name: 'JSON', extensions: ['json'] }] })
+    if (r.canceled || !r.filePath) return false
+    writeFileSync(r.filePath, JSON.stringify({ kind, keys }, null, 2), 'utf8')
+    return true
+  }))
+  ipcMain.handle('dialog:importList', guard(async (kind: unknown) => {
+    if (kind !== 'apps' && kind !== 'tweaks') return null
+    const r = await dialog.showOpenDialog(win!, { filters: [{ name: 'JSON', extensions: ['json'] }], properties: ['openFile'] })
+    if (r.canceled || !r.filePaths[0] || statSync(r.filePaths[0]).size > 1024 * 1024) return null
+    try { return listFromJson(JSON.parse(readFileSync(r.filePaths[0], 'utf8')), kind) } catch { return null }
+  }))
   ipcMain.on('app:openLogs', () => {
     if (!isUnlocked()) return
     shell.openPath(join(process.env.ProgramData ?? 'C:\\ProgramData', 'itzBuddy'))

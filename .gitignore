@@ -9,3 +9,4 @@ native/**/obj/
 Thumbs.db
 .claude/
 .taste-skill/
+.omc/
