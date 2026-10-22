@@ -91,6 +91,12 @@ function createPreviewApi(): BuddyApi {
         ] as any
         if (what === 'sessions') return [{ File: 'session-20261019-022258.json', Date: '2026-10-19T02:26:09', Changes: 214, Undone: false }] as any
         if (what === 'timer') return { installed: false, state: null } as any
+        if (what === 'wuTweakState') return ['WPFTweaksTelemetry', 'WPFTweaksConsumerFeatures', 'WPFTweaksActivity', 'WPFTweaksEndTaskOnTaskbar', 'WPFToggleDarkMode', 'WPFToggleShowExt', 'WPFToggleGameMode', 'WPFTweaksWPBT', 'WPFTweaksRazerBlock'] as any
+        if (what.startsWith('wuInstalled:')) return ['steam', 'discord', '7zip', 'vlc', 'brave', 'obs', 'epicgames', 'battlenet', 'hwinfo', 'msiafterburner', 'spotify', 'vscode', 'git', 'nodejslts'] as any
+        if (what === 'wuAppx') return ['Microsoft.WindowsCalculator', 'Microsoft.Paint', 'Microsoft.WindowsNotepad', 'Microsoft.ScreenSketch', 'Microsoft.GamingApp', 'Microsoft.XboxGamingOverlay', 'Microsoft.BingNews', 'Microsoft.BingWeather', 'Clipchamp.Clipchamp'] as any
+        if (what === 'wuDnsBench') return [{ provider: 'Cloudflare', ip: '1.1.1.1', ms: 9 }, { provider: 'Google', ip: '8.8.8.8', ms: 14 }] as any
+        if (what === 'isoState') return { isoPath: 'D:\\ISO\\Win11_25H2_English_x64.iso', drive: 'F:', image: 'F:\\sources\\install.wim', editions: [{ index: 1, name: 'Windows 11 Home' }, { index: 6, name: 'Windows 11 Pro' }, { index: 7, name: 'Windows 11 Pro N' }], defaultIndex: 6, workDir: null, ready: false } as any
+        if (what === 'isoUsb') return [{ number: 2, name: 'SanDisk Ultra USB 3.0', sizeGB: 28.7, style: 'MBR' }] as any
         if (what === 'games') return [
           { id: 'cod', detected: true, running: false, configs: [{ name: 's.1.0.cod25.txt0', label: 'Warzone / Black Ops 7', folder: 'players', modified: '' }, { name: 's.1.1.bt.cod26.txt', label: 'Modern Warfare 4 Beta', folder: 'players', modified: '' }], exes: [], lastBackup: '2026-10-19T02:26:09', multiGpu: false },
           { id: 'fortnite', detected: true, running: false, configs: [{ name: 'GameUserSettings.ini', label: 'Fortnite', folder: 'WindowsClient', modified: '' }], exes: [], lastBackup: null, multiGpu: false },

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Buddy Optimizer: one-click PC tuning for competitive gaming</title>
-<meta name="description" content="Free Windows app that tunes your gaming PC in one click, shows live hardware data, and sets competitive settings for Call of Duty, Fortnite, Apex Legends and VALORANT. Every change can be undone.">
+<meta name="description" content="Free Windows app that tunes your gaming PC in one click, shows live hardware data, sets competitive settings for Call of Duty, Fortnite, Apex Legends and VALORANT, and includes every WinUtil tweak, a 239-app installer and a Windows 11 ISO maker. Every change can be undone.">
 <meta name="theme-color" content="#07030c">
 <meta name="color-scheme" content="dark">
 <link rel="icon" href="assets/icon.png">
@@ -163,6 +163,21 @@
   .card:hover { transform: translateX(-6px); }
   .card .shot-sm { display: none; }
 
+  /* ---------- toolbox (1.2): everything from WinUtil */
+  .toolbox { padding: 120px var(--m) 140px; }
+  .tb-head { max-width: 760px; }
+  .tb-head p { margin-top: 18px; color: var(--text-2); max-width: 58ch; }
+  .new-pill { display: inline-flex; align-items: center; height: 32px; padding: 0 14px; margin-bottom: 20px; border-radius: 999px; font-size: 14px; font-weight: 650; color: #160a1c; background: linear-gradient(110deg, #dcb4ff, #ef8fd8); }
+  .tb-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 48px; }
+  .tb { padding: 8px; margin: 0; transition: transform .4s var(--ease); }
+  .tb img { border-radius: calc(var(--r) - 8px); aspect-ratio: 1304 / 795; object-fit: cover; width: 100%; }
+  .tb-body { display: grid; grid-template-columns: auto 1fr; gap: 4px 20px; align-items: baseline; padding: 22px 18px 18px; }
+  .tb-num { grid-row: span 2; font-size: clamp(40px, 4vw, 60px); font-weight: 900; letter-spacing: -0.05em; line-height: .9; color: var(--orchid); min-width: 2.2ch; }
+  .tb-num small { display: block; margin-top: 6px; font-size: 13px; font-weight: 650; letter-spacing: 0; color: var(--text-2); }
+  .tb h3 { font-size: var(--s-m); letter-spacing: -0.025em; }
+  .tb p { color: var(--text-2); }
+  .tb-credit { margin-top: 22px; font-size: var(--s-s); color: var(--text-2); }
+
   /* ---------- games: the live thing */
   .games { padding: 140px var(--m); }
   .games-head { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: end; }
@@ -254,7 +269,7 @@
   @media (max-width: 1000px) {
     .nav ul { display: none; }
     .nav > .btn { margin-left: auto; }
-    .opt, .tour, .games-head, .games-body, .cta { grid-template-columns: minmax(0, 1fr); }
+    .opt, .tour, .games-head, .games-body, .cta, .tb-grid { grid-template-columns: minmax(0, 1fr); }
     .opt { padding: 110px var(--m); }
     .tour-stage { display: none; }
     .card .shot-sm { display: block; margin-top: 18px; border-radius: 14px; aspect-ratio: 1304/795; object-fit: cover; width: 100%; }
@@ -282,7 +297,9 @@
     .gswitch[aria-checked="true"] .knob { transform: translateX(calc(var(--w) - 84px)); }
     .gswitch[aria-checked="true"]:active .knob { transform: translateX(calc(var(--w) - 100px)); }
     .steps { grid-template-columns: minmax(0, 1fr); }
-    .tour, .games, .how, .faq, .cta { padding-top: 100px; padding-bottom: 100px; }
+    .tour, .toolbox, .games, .how, .faq, .cta { padding-top: 100px; padding-bottom: 100px; }
+    .tb-body { grid-template-columns: minmax(0, 1fr); }
+    .tb-num { grid-row: auto; }
     .rows li { grid-template-columns: 1fr; gap: 2px; }
     summary { font-size: 17px; min-height: 64px; padding: 14px 20px; }
     details p { padding: 0 20px 20px; font-size: 16px; }
@@ -313,6 +330,7 @@
   <ul>
     <li><a href="#optimize">Optimize</a></li>
     <li><a href="#tour">Features</a></li>
+    <li><a href="#toolbox">Toolbox</a></li>
     <li><a href="#games">Games</a></li>
     <li><a href="#faq">FAQ</a></li>
   </ul>
@@ -410,6 +428,38 @@
     </div>
   </section>
 
+  <!-- TOOLBOX (new in 1.2): everything from WinUtil -->
+  <section class="toolbox" id="toolbox" aria-labelledby="tb-h">
+    <div class="tb-head">
+      <span class="new-pill rise">New in 1.2</span>
+      <h2 id="tb-h" class="h2 rise" style="--i:1">The whole toolbox, built in.</h2>
+      <p class="rise" style="--i:2">Everything from Chris Titus Tech's WinUtil now lives inside Buddy: every Windows tweak, a full app installer, system repairs and a Windows 11 ISO maker. Sorted into groups that make sense, and recorded for Undo like the rest of the app.</p>
+    </div>
+    <div class="tb-grid">
+      <article class="tb glass rise" data-tilt>
+        <img src="assets/tweaks.jpg" width="1304" height="795" alt="Tweaks screen with categories, presets and applied tweaks" loading="lazy">
+        <div class="tb-body"><b class="tb-num">64<small>tweaks</small></b><h3>Tweaks</h3>
+          <p>Every WinUtil tweak in 8 clear groups, from privacy and performance to bloat, Start and taskbar. Minimal, Standard and Advanced presets, a check of what's already applied, and Undo on each one.</p></div>
+      </article>
+      <article class="tb glass rise" style="--i:1" data-tilt>
+        <img src="assets/apps.jpg" width="1304" height="795" alt="Apps screen with categories and apps ready to install" loading="lazy">
+        <div class="tb-body"><b class="tb-num">239<small>apps</small></b><h3>Apps</h3>
+          <p>Install, update or remove apps in 12 categories with WinGet or Chocolatey. Tick what you want and install it all in one go, or update everything on the PC with one button.</p></div>
+      </article>
+      <article class="tb glass rise" data-tilt>
+        <img src="assets/system.jpg" width="1304" height="795" alt="System screen with the Windows Update policy options" loading="lazy">
+        <div class="tb-body"><b class="tb-num">6<small>tool sets</small></b><h3>System</h3>
+          <p>Windows features, repairs (SFC, DISM, Windows Update and network reset), update policy, Store apps, DNS and the classic control panels, all one click away.</p></div>
+      </article>
+      <article class="tb glass rise" style="--i:1" data-tilt>
+        <img src="assets/iso.jpg" width="1304" height="795" alt="Windows ISO screen with an ISO checked and an edition picked" loading="lazy">
+        <div class="tb-body"><b class="tb-num">W11<small>ISO or USB</small></b><h3>Windows ISO</h3>
+          <p>Make Windows 11 setup media without the bloat: it skips the online account, removes preinstalled apps and applies the core tweaks. Save an ISO or write a bootable USB.</p></div>
+      </article>
+    </div>
+    <p class="tb-credit rise">Also in the classic console menu (options 20–23). Tweaks and app catalog from <a class="link" href="https://github.com/ChrisTitusTech/winutil">WinUtil</a> by Chris Titus Tech, MIT license.</p>
+  </section>
+
   <!-- GAMES -->
   <section class="games" id="games" aria-labelledby="games-h">
     <div class="games-head">
@@ -460,6 +510,8 @@
       <details name="faq" class="glass rise"><summary>Windows says "Windows protected your PC". Is that normal?<span class="pm" aria-hidden="true"></span></summary><p>Yes. The installer is not code-signed yet, so SmartScreen warns about it. Click More info, then Run anyway.</p></details>
       <details name="faq" class="glass rise"><summary>Which games are supported?<span class="pm" aria-hidden="true"></span></summary><p>Call of Duty (Warzone, Black Ops 7 and Modern Warfare 4), Fortnite, Apex Legends and VALORANT. The Windows tweaks help every game.</p></details>
       <details name="faq" class="glass rise"><summary>Why is there no CPU temperature?<span class="pm" aria-hidden="true"></span></summary><p>Reading it needs a kernel driver that some anti-cheats, such as FACEIT, block. Buddy leaves it out on purpose; graphics card temperatures are shown.</p></details>
+      <details name="faq" class="glass rise"><summary>What's new in 1.2?<span class="pm" aria-hidden="true"></span></summary><p>Four new sections with everything from WinUtil: Tweaks, Apps, System and Windows ISO, also in the classic console menu as options 20–23. Plus stronger protection for the part of the app that runs with administrator rights.</p></details>
+      <details name="faq" class="glass rise"><summary>Where do the tweaks and apps come from?<span class="pm" aria-hidden="true"></span></summary><p>From WinUtil by Chris Titus Tech, an open-source Windows utility under the MIT license. Buddy runs its tweaks through its own undo journal and checks the signature of anything it downloads before starting it.</p></details>
       <details name="faq" class="glass rise"><summary>Does it update itself?<span class="pm" aria-hidden="true"></span></summary><p>Yes, from version 1.1.1 on. When an update has downloaded, the app shows a banner and a Windows notification with a one-click restart.</p></details>
     </div>
   </section>
@@ -488,10 +540,10 @@
 <footer>
   <div class="tile glass t-state rise">
     <p>Made by itzBuddy for players who want every frame.</p>
-    <small>© 2026 itzBuddy · MIT license · Not affiliated with Activision, Epic Games, Electronic Arts or Riot Games.</small>
+    <small>© 2026 itzBuddy · MIT license · Not affiliated with Activision, Epic Games, Electronic Arts or Riot Games. Includes WinUtil by Chris Titus Tech (MIT).</small>
   </div>
   <div class="tile glass t-nav rise" style="--i:1"><div class="tile-label">Buddy Optimizer</div>
-    <ul><li><a href="#optimize">Optimize</a></li><li><a href="#tour">Features</a></li><li><a href="#games">Games</a></li><li><a href="#faq">FAQ</a></li><li><a href="https://github.com/itzBuddyyy/buddy-optimizer">GitHub</a></li></ul>
+    <ul><li><a href="#optimize">Optimize</a></li><li><a href="#tour">Features</a></li><li><a href="#toolbox">Toolbox</a></li><li><a href="#games">Games</a></li><li><a href="#faq">FAQ</a></li><li><a href="https://github.com/itzBuddyyy/buddy-optimizer">GitHub</a></li></ul>
   </div>
   <div class="tile glass t-social rise" style="--i:2"><div class="tile-label">Follow</div>
     <ul>
